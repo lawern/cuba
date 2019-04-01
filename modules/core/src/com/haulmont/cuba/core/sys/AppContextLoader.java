@@ -19,6 +19,7 @@ package com.haulmont.cuba.core.sys;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.Stores;
+import com.haulmont.cuba.core.sys.environmentcheck.*;
 import com.haulmont.cuba.core.sys.persistence.DbmsType;
 import com.haulmont.cuba.core.sys.persistence.PersistenceConfigProcessor;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,6 +81,23 @@ public class AppContextLoader extends AbstractWebAppContextLoader {
         super.beforeInitAppContext();
 
         log.info("DbmsType of the main database is set to " + DbmsType.getType() + DbmsType.getVersion());
+
+        EnvironmentChecks checks = new EnvironmentChecks();
+        checks.addCheck(new JvmCheck());
+        checks.addCheck(new DirectoriesCheck());
+        checks.addCheck(new DataStoresCheck());
+        List<String> checksResult = checks.runChecks();
+        if (!checksResult.isEmpty()) {
+            StringBuilder results = new StringBuilder();
+            for (String result : checksResult){
+                results.append("\n");
+                results.append(result);
+            }
+            log.warn(String.format("Some of environment checks failed: %s", results.toString()));
+        }
+        else {
+            log.info("Environment checks completed successfully");
+        }
 
         // Init persistence.xml
         Stores.getAll().forEach(AppContextLoader::createPersistenceXml);
