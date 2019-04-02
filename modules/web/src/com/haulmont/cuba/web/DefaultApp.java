@@ -17,6 +17,8 @@
 package com.haulmont.cuba.web;
 
 import com.google.common.base.Strings;
+import com.haulmont.cuba.core.global.Messages;
+import com.haulmont.cuba.gui.Notifications;
 import com.haulmont.cuba.gui.Screens;
 import com.haulmont.cuba.gui.screen.OpenMode;
 import com.haulmont.cuba.security.global.LoginException;
@@ -28,6 +30,7 @@ import com.haulmont.cuba.web.security.events.AppLoggedOutEvent;
 import com.haulmont.cuba.web.security.events.AppStartedEvent;
 import com.haulmont.cuba.web.sys.VaadinSessionScope;
 import com.vaadin.server.*;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,8 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.haulmont.cuba.web.Connection.StateChangeEvent;
 import static com.haulmont.cuba.web.Connection.UserSubstitutedEvent;
@@ -83,6 +88,35 @@ public class DefaultApp extends App {
             preventSessionFixation(connection, userSession);
 
             initExceptionHandlers(true);
+
+            AppUI currentUi = AppUI.getCurrent();
+            if (currentUi != null) {
+                UserSession oldUserSession = currentUi.getCurrentSession();
+
+                currentUi.setCurrentSession(connection.getSession());
+
+                // reset UserSession in all UIs on logout
+                getAppUIs()
+                        .stream()
+                        .filter(AppUI::isUserSessionAlive)
+                        .filter(ui -> Objects.equals(ui.getCurrentSession(), oldUserSession))
+                        .collect(Collectors.toList())
+                        .forEach(ui -> ui.setCurrentSession(userSession));
+            }
+
+            if (connection.isAuthenticated()) {
+                // reset UserSession in all UIs on login
+                getAppUIs()
+                        .stream()
+                        .filter(AppUI::isUserSessionAlive)
+                        .filter(ui -> !Objects.equals(ui.getCurrentSession(), userSession))
+                        .forEach(ui -> {
+                            String sessionChangedMsg = beanLocator.get(Messages.class).getMainMessage("sessionChanged");
+
+                            new Notification(sessionChangedMsg, Notification.Type.HUMANIZED_MESSAGE)
+                                    .show(ui.getPage());
+                        });
+            }
 
             initializeUi();
 
@@ -173,13 +207,17 @@ public class DefaultApp extends App {
             createTopLevelWindow(currentUi);
         }
 
-        for (AppUI ui : getAppUIs()) {
-            if (currentUi != ui) {
-                ui.accessSynchronously(() ->
-                        createTopLevelWindow(ui)
-                );
-            }
-        }
+        getAppUIs()
+                .stream()
+                .filter(ui -> Objects.equals(userSessionSource.getUserSession(), ui.getCurrentSession()))
+                .collect(Collectors.toList())
+                .forEach(ui -> {
+                    if (currentUi != ui) {
+                        ui.accessSynchronously(() ->
+                                createTopLevelWindow(ui)
+                        );
+                    }
+                });
     }
 
     protected void preventSessionFixation(Connection connection, UserSession userSession) {

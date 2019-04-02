@@ -108,6 +108,8 @@ public abstract class App {
     @Inject
     protected UserSessionService userSessionService;
     @Inject
+    protected UserSessionSource userSessionSource;
+    @Inject
     protected MessageTools messageTools;
     @Inject
     protected SettingsClient settingsClient;
@@ -488,7 +490,12 @@ public abstract class App {
     public void removeAllWindows() {
         log.debug("Closing all windows in all UIs");
         try {
-            for (AppUI ui : getAppUIs()) {
+            List<AppUI> currentSessionUIs = getAppUIs()
+                    .stream()
+                    .filter(ui -> Objects.equals(userSessionSource.getUserSession(), ui.getCurrentSession()))
+                    .collect(Collectors.toList());
+
+            for (AppUI ui : currentSessionUIs) {
                 Screens screens = ui.getScreens();
                 if (screens != null) {
                     Screen rootScreen = screens.getOpenedScreens().getRootScreenOrNull();

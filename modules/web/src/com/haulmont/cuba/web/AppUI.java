@@ -140,6 +140,16 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
     protected UrlRouting urlRouting;
     protected History history;
 
+    protected UserSession currentSession;
+
+    public UserSession getCurrentSession() {
+        return currentSession;
+    }
+
+    public void setCurrentSession(UserSession currentSession) {
+        this.currentSession = currentSession;
+    }
+
     public AppUI() {
     }
 
@@ -320,6 +330,10 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
                         Notification.Type.HUMANIZED_MESSAGE);
             }
 
+            if (connection != null) {
+                setCurrentSession(connection.getSession());
+            }
+
             setupUI();
         } catch (Exception e) {
             log.error("Unable to init ui", e);
@@ -399,6 +413,11 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
         } catch (NoUserSessionException e) {
             return false;
         }
+    }
+
+    protected boolean isUserSessionAlive() {
+        return currentSession instanceof ClientUserSession
+                && ((ClientUserSession) currentSession).isAuthenticated();
     }
 
     protected void publishAppInitializedEvent(App app) {
@@ -500,6 +519,11 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
     public void handleRequest(VaadinRequest request) {
         // on refresh page call
         processExternalLink(request, getUrlRouting().getState());
+    }
+
+    @Override
+    public void changeVariables(Object source, Map<String, Object> variables) {
+        super.changeVariables(source, variables);
     }
 
     /**
@@ -751,6 +775,11 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
     @Override
     public void paintContent(PaintTarget target) throws PaintException {
         super.paintContent(target);
+
+        /*if (isUserSessionAlive()
+                && !Objects.equals(currentSession, app.getConnection().getSession())) {
+            app.createTopLevelWindow(this);
+        }*/
 
         String lastHistoryOp = ((WebUrlRouting) getUrlRouting()).getLastHistoryOperation();
         target.addAttribute(CubaUIConstants.LAST_HISTORY_OP, lastHistoryOp);
