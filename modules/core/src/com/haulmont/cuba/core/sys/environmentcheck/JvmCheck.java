@@ -16,24 +16,22 @@
 
 package com.haulmont.cuba.core.sys.environmentcheck;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class JvmCheck implements EnvironmentCheck {
-    protected static final Logger log = LoggerFactory.getLogger(JvmCheck.class);
 
     @Override
-    public List<String> doCheck() {
+    public List<CheckFailedResult> doCheck() {
         String javaVersion = System.getProperty("java.runtime.version");
 
         String[] javaVersionElements = javaVersion.split("\\.|_|-b|\\+");
 
-        List<String> result = new ArrayList<>();
+        List<CheckFailedResult> result = new ArrayList<>();
         if ("1".equals(javaVersionElements[0]) && Integer.valueOf(javaVersionElements[1]) < 8) {
-            result.add(String.format("Unsupported java version detected: %s; Cuba supports java 8 and higher.", javaVersion));
+            result.add(new CheckFailedResult(
+                    String.format("Unsupported java version detected: %s; Cuba supports java 8 and higher.", javaVersion),
+                    null));
         }
         return result;
     }

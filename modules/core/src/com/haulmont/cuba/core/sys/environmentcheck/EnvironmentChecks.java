@@ -16,12 +16,19 @@
 
 package com.haulmont.cuba.core.sys.environmentcheck;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * System-level class for environment sanity checks.
+ */
 public class EnvironmentChecks {
 
+    private static final Logger log = LoggerFactory.getLogger(EnvironmentChecks.class);
     protected List<EnvironmentCheck> checks;
 
     public List<EnvironmentCheck> getChecks() {
@@ -38,13 +45,25 @@ public class EnvironmentChecks {
         checks.add(check);
     }
 
-    public List<String> runChecks() {
+    /**
+     * Run all environment sanity checks.
+     *
+     * @return list of failed checks results, empty list if all checks completed successfully
+     */
+    public List<CheckFailedResult> runChecks() {
         if (checks == null)
             return Collections.emptyList();
-        List<String> result = new ArrayList<>();
+        List<CheckFailedResult> results = new ArrayList<>();
         for (EnvironmentCheck check : checks) {
-            result.addAll(check.doCheck());
+            results.addAll(check.doCheck());
         }
-        return result;
+        for (CheckFailedResult result : results) {
+            if (result.getException() != null) {
+                log.debug(result.getMessage(), result.getException());
+            } else {
+                log.debug(result.getMessage());
+            }
+        }
+        return results;
     }
 }

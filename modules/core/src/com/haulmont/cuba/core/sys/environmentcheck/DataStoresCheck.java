@@ -19,8 +19,6 @@ package com.haulmont.cuba.core.sys.environmentcheck;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.dbupdate.DbProperties;
 import com.haulmont.cuba.core.sys.persistence.DbmsSpecificFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 
@@ -33,11 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataStoresCheck implements EnvironmentCheck {
-    protected static final Logger log = LoggerFactory.getLogger(DataStoresCheck.class);
 
     @Override
-    public List<String> doCheck() {
-        List<String> result = new ArrayList<>();
+    public List<CheckFailedResult> doCheck() {
+        List<CheckFailedResult> result = new ArrayList<>();
         JndiDataSourceLookup lookup = new JndiDataSourceLookup();
         DataSource dataSource;
         Connection connection;
@@ -50,7 +47,7 @@ public class DataStoresCheck implements EnvironmentCheck {
                 try {
                     connection = dataSource.getConnection();
                     DatabaseMetaData dbMetaData = connection.getMetaData();
-                    DbProperties dbProperties = new DbProperties(getConnectionUrl(connection));
+                    DbProperties dbProperties = new DbProperties(dbMetaData.getURL());
                     boolean isSchemaByUser = DbmsSpecificFactory.getDbmsFeatures().isSchemaByUser();
                     String schemaName = isSchemaByUser ?
                             dbMetaData.getUserName() : dbProperties.getCurrentSchemaProperty();
@@ -63,18 +60,18 @@ public class DataStoresCheck implements EnvironmentCheck {
                         }
                     }
                     if (!found) {
-                        result.add("Database checked but SEC_USER table is not found");
+                        result.add(new CheckFailedResult("Main Database checked but SEC_USER table is not found", null));
                     }
                     connection.close();
                 } catch (SQLException e) {
-                    result.add("Error connecting to main Database");
+                    result.add(new CheckFailedResult("Error connecting to main Database", e));
                 } finally {
                     try {
                         if (connection != null) {
                             connection.close();
                         }
                     } catch (SQLException e) {
-                        result.add("Exception while closing the Database connection");
+                        result.add(new CheckFailedResult("Exception while closing connection to main Database", e));
                     }
                 }
             } else {
@@ -83,19 +80,19 @@ public class DataStoresCheck implements EnvironmentCheck {
                     connection = dataSource.getConnection();
                     connection.getMetaData();
                 } catch (SQLException e) {
-                    result.add("Error connecting to main Database");
+                    result.add(new CheckFailedResult("Error connecting to main Database", e));
                 } finally {
                     try {
                         if (connection != null) {
                             connection.close();
                         }
                     } catch (SQLException e) {
-                        result.add("Exception while closing the Database connection");
+                        result.add(new CheckFailedResult("Exception while closing connection to main Database", e));
                     }
                 }
             }
         } catch (DataSourceLookupFailureException e) {
-            result.add("Can not find JNDI datasource for main Data Store");
+            result.add(new CheckFailedResult("Can not find JNDI datasource for main Data Store", e));
         }
 
         String additionalStores = AppContext.getProperty("cuba.additionalStores");
@@ -110,30 +107,27 @@ public class DataStoresCheck implements EnvironmentCheck {
                 } catch (DataSourceLookupFailureException e) {
                     String beanName = AppContext.getProperty("cuba.storeImpl_" + storeName);
                     if (beanName == null) {
-                        result.add(String.format("Can not find JNDI datasource for additional Data Store: %s", storeName));
+                        result.add(new CheckFailedResult(
+                                String.format("Can not find JNDI datasource for additional Data Store: %s", storeName),
+                                null));
                     }
                 } catch (SQLException e) {
-                    result.add(String.format("Error connecting to additional Data Store: %s", storeName));
+                    result.add(new CheckFailedResult(
+                            String.format("Error connecting to additional Data Store: %s", storeName),
+                            e));
                 } finally {
                     try {
                         if (connection != null) {
                             connection.close();
                         }
                     } catch (SQLException e) {
-                        result.add(String.format("Exception while closing connection to additional Data Store: %s", storeName));
+                        result.add(new CheckFailedResult(
+                                String.format("Exception while closing connection to additional Data Store: %s", storeName),
+                                e));
                     }
                 }
             }
         }
         return result;
-    }
-
-    protected static String getConnectionUrl(Connection connection) {
-        try {
-            DatabaseMetaData databaseMetaData = connection.getMetaData();
-            return databaseMetaData.getURL();
-        } catch (Throwable e) {
-            return null;
-        }
     }
 }

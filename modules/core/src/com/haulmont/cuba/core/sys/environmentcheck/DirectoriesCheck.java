@@ -17,8 +17,6 @@
 package com.haulmont.cuba.core.sys.environmentcheck;
 
 import com.haulmont.cuba.core.sys.AppContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -26,11 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DirectoriesCheck implements EnvironmentCheck {
-    protected static final Logger log = LoggerFactory.getLogger(DirectoriesCheck.class);
 
     @Override
-    public List<String> doCheck() {
-        List<String> result = new ArrayList<>();
+    public List<CheckFailedResult> doCheck() {
+        List<CheckFailedResult> result = new ArrayList<>();
         String dataDir = AppContext.getProperty("cuba.dataDir");
         if (dataDir != null) {
             File dataDirFile = new File(dataDir);
@@ -43,16 +40,19 @@ public class DirectoriesCheck implements EnvironmentCheck {
                     readable = Files.isReadable(dataDirFile.toPath());
                     writable = Files.isWritable(dataDirFile.toPath());
                 } catch (SecurityException e) {
-                    result.add(String.format("Wrong permissions for work directory. Readable: %b, Writable: %b",
-                            readable, writable));
+                    result.add(new CheckFailedResult(
+                            String.format("Wrong permissions for work directory. Readable: %b, Writable: %b",
+                                    readable, writable), e));
                 }
             }
             if (!writable || !readable || !isDir) {
-                result.add(String.format("Wrong permissions for work directory. Readable: %b, Writable: %b, Is directory: %b",
-                        readable, writable, isDir));
+                result.add(new CheckFailedResult(
+                        String.format("Wrong permissions for work directory. Readable: %b, Writable: %b, Is directory: %b",
+                                readable, writable, isDir), null));
             }
         } else {
-            result.add("Unable to get work directory path from \'cuba.dataDir\' property");
+            result.add(new CheckFailedResult("Unable to get work directory path from \'cuba.dataDir\' property",
+                    null));
         }
 
         String tempDir = AppContext.getProperty("cuba.tempDir");
@@ -67,16 +67,19 @@ public class DirectoriesCheck implements EnvironmentCheck {
                     readable = Files.isReadable(tempDirFile.toPath());
                     writable = Files.isWritable(tempDirFile.toPath());
                 } catch (SecurityException e) {
-                    result.add(String.format("Wrong permissions for temporary directory. Readable: %b, Writable: %b",
-                            readable, writable));
+                    result.add(new CheckFailedResult(
+                            String.format("Wrong permissions for temporary directory. Readable: %b, Writable: %b",
+                                    readable, writable), e));
                 }
             }
             if (!writable || !readable || !isDir) {
-                result.add(String.format("Wrong permissions for temporary directory. Readable: %b, Writable: %b, Is directory: %b",
-                        readable, writable, isDir));
+                result.add(new CheckFailedResult(
+                        String.format("Wrong permissions for temporary directory. Readable: %b, Writable: %b, Is directory: %b",
+                                readable, writable, isDir), null));
             }
         } else {
-            result.add("Unable to get temporary directory path from \'cuba.tempDir\' property");
+            result.add(new CheckFailedResult("Unable to get temporary directory path from \'cuba.tempDir\' property",
+                    null));
         }
 
         return result;

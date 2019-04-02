@@ -16,9 +16,25 @@
 
 package com.haulmont.cuba.core.sys.environmentcheck;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-public interface EnvironmentCheck {
+/**
+ * Class for result of environment sanity check fail.
+ */
+public class CheckFailedResult {
+    protected String message;
+    protected Exception exception;
 
-    List<CheckFailedResult> doCheck();
+    public CheckFailedResult (String message, @Nullable Exception exception){
+        this.message = message;
+        this.exception = exception;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
 }
