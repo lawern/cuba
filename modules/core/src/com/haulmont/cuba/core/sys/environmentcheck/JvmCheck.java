@@ -16,6 +16,9 @@
 
 package com.haulmont.cuba.core.sys.environmentcheck;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,14 +26,11 @@ public class JvmCheck implements EnvironmentCheck {
 
     @Override
     public List<CheckFailedResult> doCheck() {
-        String javaVersion = System.getProperty("java.runtime.version");
-
-        String[] javaVersionElements = javaVersion.split("\\.|_|-b|\\+");
-
         List<CheckFailedResult> result = new ArrayList<>();
-        if ("1".equals(javaVersionElements[0]) && Integer.valueOf(javaVersionElements[1]) < 8) {
+        String javaVersion = SystemUtils.JAVA_VERSION;
+        if (!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {
             result.add(new CheckFailedResult(
-                    String.format("Unsupported java version detected: %s; Cuba supports java 8 and higher.", javaVersion),
+                    String.format("Unsupported java version detected: %s; Cuba supports Java 8 and higher", javaVersion),
                     null));
         }
         return result;
