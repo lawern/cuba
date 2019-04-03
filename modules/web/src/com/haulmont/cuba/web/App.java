@@ -492,7 +492,8 @@ public abstract class App {
         try {
             List<AppUI> currentSessionUIs = getAppUIs()
                     .stream()
-                    .filter(ui -> Objects.equals(userSessionSource.getUserSession(), ui.getCurrentSession()))
+                    .filter(ui -> userSessionSource.checkCurrentUserSession()
+                            && Objects.equals(userSessionSource.getUserSession(), ui.getCurrentSession()))
                     .collect(Collectors.toList());
 
             for (AppUI ui : currentSessionUIs) {

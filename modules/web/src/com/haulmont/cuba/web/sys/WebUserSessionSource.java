@@ -22,8 +22,10 @@ import com.haulmont.cuba.core.sys.AbstractUserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.security.app.UserSessionService;
+import com.haulmont.cuba.security.global.MismatchedUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
+import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.Connection;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
@@ -32,6 +34,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component(UserSessionSource.NAME)
@@ -84,6 +87,9 @@ public class WebUserSessionSource extends AbstractUserSessionSource {
         if (session == null) {
             throw new IllegalStateException("No user session");
         }
+
+        checkUiSession(session);
+
         return session;
     }
 
@@ -107,5 +113,15 @@ public class WebUserSessionSource extends AbstractUserSessionSource {
             request.setAttribute(REQUEST_ATTR, userSession);
         }
         return userSession;
+    }
+
+    protected void checkUiSession(UserSession appSession) {
+        boolean appAuthenticated = App.getInstance().getConnection().isAuthenticated();
+        UserSession uiSession = AppUI.getCurrent().getCurrentSession();
+        if (appAuthenticated
+                && AppUI.getCurrent().hasAuthenticatedSession()
+                && !Objects.equals(appSession, uiSession)) {
+            throw new MismatchedUserSessionException(uiSession.getId());
+        }
     }
 }

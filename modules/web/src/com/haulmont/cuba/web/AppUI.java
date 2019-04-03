@@ -415,7 +415,7 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
         }
     }
 
-    protected boolean isUserSessionAlive() {
+    public boolean hasAuthenticatedSession() {
         return currentSession instanceof ClientUserSession
                 && ((ClientUserSession) currentSession).isAuthenticated();
     }
@@ -519,11 +519,6 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
     public void handleRequest(VaadinRequest request) {
         // on refresh page call
         processExternalLink(request, getUrlRouting().getState());
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        super.changeVariables(source, variables);
     }
 
     /**
@@ -775,11 +770,6 @@ public class AppUI extends CubaUI implements ErrorHandler, EnhancedUI, UiExcepti
     @Override
     public void paintContent(PaintTarget target) throws PaintException {
         super.paintContent(target);
-
-        /*if (isUserSessionAlive()
-                && !Objects.equals(currentSession, app.getConnection().getSession())) {
-            app.createTopLevelWindow(this);
-        }*/
 
         String lastHistoryOp = ((WebUrlRouting) getUrlRouting()).getLastHistoryOperation();
         target.addAttribute(CubaUIConstants.LAST_HISTORY_OP, lastHistoryOp);

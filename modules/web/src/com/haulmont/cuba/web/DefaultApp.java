@@ -18,7 +18,6 @@ package com.haulmont.cuba.web;
 
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.Messages;
-import com.haulmont.cuba.gui.Notifications;
 import com.haulmont.cuba.gui.Screens;
 import com.haulmont.cuba.gui.screen.OpenMode;
 import com.haulmont.cuba.security.global.LoginException;
@@ -95,26 +94,31 @@ public class DefaultApp extends App {
 
                 currentUi.setCurrentSession(connection.getSession());
 
-                // reset UserSession in all UIs on logout
+                // "logout" all UIs with the same UserSession
                 getAppUIs()
                         .stream()
-                        .filter(AppUI::isUserSessionAlive)
+                        .filter(AppUI::hasAuthenticatedSession)
                         .filter(ui -> Objects.equals(ui.getCurrentSession(), oldUserSession))
                         .collect(Collectors.toList())
                         .forEach(ui -> ui.setCurrentSession(userSession));
             }
 
             if (connection.isAuthenticated()) {
-                // reset UserSession in all UIs on login
+                // notify all UIs bound with different sessions
                 getAppUIs()
                         .stream()
-                        .filter(AppUI::isUserSessionAlive)
-                        .filter(ui -> !Objects.equals(ui.getCurrentSession(), userSession))
+                        .filter(ui -> ui.hasAuthenticatedSession()
+                                && !Objects.equals(ui.getCurrentSession(), userSession))
                         .forEach(ui -> {
-                            String sessionChangedMsg = beanLocator.get(Messages.class).getMainMessage("sessionChanged");
+                            Messages messages = beanLocator.get(Messages.class);
 
-                            new Notification(sessionChangedMsg, Notification.Type.HUMANIZED_MESSAGE)
-                                    .show(ui.getPage());
+                            String sessionChangedCaption = messages.getMainMessage("sessionChangedCaption");
+                            String sessionChanged = messages.getMainMessage("sessionChanged");
+
+                            Notification notification = new Notification(sessionChangedCaption, sessionChanged,
+                                    Notification.Type.WARNING_MESSAGE);
+                            notification.setDelayMsec(-1);
+                            notification.show(ui.getPage());
                         });
             }
 
