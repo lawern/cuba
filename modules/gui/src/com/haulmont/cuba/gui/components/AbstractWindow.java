@@ -855,4 +855,14 @@ public class AbstractWindow extends Screen implements Window, LegacyFrame, Compo
     public void removeBeforeWindowCloseListener(Consumer<Window.BeforeCloseEvent> listener) {
         frame.removeBeforeWindowCloseListener(listener);
     }
+
+    @Override
+    public void setFocusMode(FocusMode focusMode) {
+        frame.setFocusMode(focusMode);
+    }
+
+    @Override
+    public FocusMode getFocusMode() {
+        return frame.getFocusMode();
+    }
 }
