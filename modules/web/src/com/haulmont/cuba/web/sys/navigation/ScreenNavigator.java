@@ -32,6 +32,7 @@ import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.screen.compatibility.LegacyFrame;
 import com.haulmont.cuba.security.entity.EntityOp;
 import com.haulmont.cuba.security.entity.PermissionType;
+import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.app.ui.navigation.notfoundwindow.NotFoundScreen;
 import com.haulmont.cuba.web.gui.WebWindow;
@@ -101,7 +102,8 @@ public class ScreenNavigator {
 
     protected boolean handleCurrentRootNavigation(NavigationState requestedState) {
         if (!currentRootNavigated(requestedState)) {
-            return false;
+
+            return true;
         }
 
         for (Screens.WindowStack windowStack : owner.getOpenedScreens().getWorkAreaStacks()) {
@@ -135,8 +137,22 @@ public class ScreenNavigator {
             return true;
         }
 
-        log.debug("Navigation between root screens is not supported");
-        owner.revertNavigationState();
+        WindowInfo windowInfo = windowConfig.findWindowInfoByRoute(requestedState.getRoot());
+        if (windowInfo != null) {
+            if (!windowInfo.getRouteDefinition().isPublicPage()
+                    && !App.getInstance().getConnection().isAuthenticated()) {
+                owner.showNotification("Please log in first");
+                owner.revertNavigationState();
+
+                return true;
+            }
+
+            ui.getScreens()
+                    .create(windowInfo.getId(), OpenMode.ROOT)
+                    .show();
+        } else {
+            owner.revertNavigationState();
+        }
 
         return true;
     }

@@ -314,7 +314,7 @@ public class WindowConfig {
                     parentPrefix = superScreenParentPrefix;
                 }
             }
-            routeDefinition = new RouteDefinition(route, parentPrefix, rootRoute);
+            routeDefinition = new RouteDefinition(route, parentPrefix, rootRoute, false);
         } else {
             routeDefinition = superScreenRouteDefinition;
         }

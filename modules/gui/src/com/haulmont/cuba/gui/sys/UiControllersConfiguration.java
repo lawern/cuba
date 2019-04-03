@@ -124,8 +124,9 @@ public class UiControllersConfiguration extends AbstractScanConfiguration {
             String pathAttr = (String) routeAnnotation.get(Route.PATH_ATTRIBUTE);
             String parentPrefixAttr = (String) routeAnnotation.get(Route.PARENT_PREFIX_ATTRIBUTE);
             boolean rootRoute = (boolean) routeAnnotation.get(Route.ROOT_ATTRIBUTE);
+            boolean publicPage = (boolean) routeAnnotation.get(Route.PUBLIC_ATTRIBUTE);
 
-            routeDefinition = new RouteDefinition(pathAttr, parentPrefixAttr, rootRoute);
+            routeDefinition = new RouteDefinition(pathAttr, parentPrefixAttr, rootRoute, publicPage);
         }
 
         return routeDefinition;

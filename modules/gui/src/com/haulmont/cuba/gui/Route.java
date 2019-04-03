@@ -74,6 +74,7 @@ public @interface Route {
     String PATH_ATTRIBUTE = "path";
     String PARENT_PREFIX_ATTRIBUTE = "parentPrefix";
     String ROOT_ATTRIBUTE = "root";
+    String PUBLIC_ATTRIBUTE = "publicPage";
 
     @AliasFor(PATH_ATTRIBUTE)
     String value() default "";
@@ -84,4 +85,6 @@ public @interface Route {
     String parentPrefix() default "";
 
     boolean root() default false;
+
+    boolean publicPage() default false;
 }

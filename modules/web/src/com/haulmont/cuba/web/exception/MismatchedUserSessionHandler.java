@@ -67,21 +67,24 @@ public class MismatchedUserSessionHandler extends AbstractExceptionHandler {
         try {
             AppUI ui = AppUI.getCurrent();
 
-            // we may show two or more dialogs if user pressed F5 and we have no valid user session
-            // just remove previous dialog and show new
-            List<Window> changedSessionDialogs = ui.getWindows()
-                    .stream()
-                    .filter(w -> w instanceof MismatchedUserSessionExceptionDialog)
-                    .collect(Collectors.toList());
-
-            for (Window dialog : changedSessionDialogs) {
-                ui.removeWindow(dialog);
-            }
-
+            closeAllDialogs(ui);
             showMismatchedSessionDialog(ui);
         } catch (Throwable th) {
             log.error("Unable to handle MismatchedUserSessionException", throwable);
             log.error("Exception in MismatchedUserSessionHandler", th);
+        }
+    }
+
+    // we may show two or more dialogs if user pressed F5 and we have no valid user session
+    // just remove previous dialog and show new
+    protected void closeAllDialogs(AppUI ui) {
+        List<Window> changedSessionDialogs = ui.getWindows()
+                .stream()
+                .filter(w -> w instanceof MismatchedUserSessionExceptionDialog)
+                .collect(Collectors.toList());
+
+        for (Window dialog : changedSessionDialogs) {
+            ui.removeWindow(dialog);
         }
     }
 
@@ -109,7 +112,7 @@ public class MismatchedUserSessionHandler extends AbstractExceptionHandler {
 
         CubaButton reloginBtn = new CubaButton();
         reloginBtn.addStyleName("c-primary-action");
-        reloginBtn.addClickListener(event -> relogin());
+        reloginBtn.addClickListener(event -> refreshUi());
         reloginBtn.setCaption(messages.getMainMessage(DialogAction.Type.OK.getMsgKey(), locale));
 
         String iconName = AppBeans.get(Icons.class).get(DialogAction.Type.OK.getIconKey());
@@ -140,9 +143,21 @@ public class MismatchedUserSessionHandler extends AbstractExceptionHandler {
         }
     }
 
-    protected void relogin() {
-        String url = ControllerUtils.getLocationWithoutParams() + "?restartApp";
-        Page.getCurrent().open(url, "_self");
+    protected void refreshUi() {
+        AppUI currentUi = AppUI.getCurrent();
+        App app = App.getInstance();
+
+        closeAllDialogs(currentUi);
+
+        currentUi.setCurrentSession(app.getConnection().getSession());
+
+        refreshPage();
+
+        app.createTopLevelWindow(currentUi);
+    }
+
+    protected void refreshPage() {
+        Page.getCurrent().open(ControllerUtils.getLocationWithoutParams(), "_self");
     }
 
     public static class MismatchedUserSessionExceptionDialog extends CubaWindow {

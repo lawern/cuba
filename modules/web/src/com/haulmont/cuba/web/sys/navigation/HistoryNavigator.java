@@ -16,6 +16,8 @@
 
 package com.haulmont.cuba.web.sys.navigation;
 
+import com.haulmont.cuba.gui.components.RootWindow;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.navigation.NavigationState;
 import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.Screen;
@@ -72,7 +74,18 @@ public class HistoryNavigator {
         }
 
         if (owner.isRootState(requestedState)) {
-            owner.getScreenNavigator().handleCurrentRootNavigation(requestedState);
+            WindowInfo rootWindowInfo = owner.windowConfig.findWindowInfoByRoute(requestedState.getRoot());
+            if (rootWindowInfo != null) {
+                Class<? extends FrameOwner> clazz = rootWindowInfo.getControllerClass();
+                RootWindow topLevelWindow = AppUI.getCurrent().getTopLevelWindow();
+                if (topLevelWindow != null
+                        && clazz.isAssignableFrom(topLevelWindow.getFrameOwner().getClass())) {
+
+                    owner.getScreenNavigator().handleCurrentRootNavigation(requestedState);
+                } else {
+                    owner.getScreenNavigator().handleRootChange(requestedState);
+                }
+            }
         }
 
         Screen lastOpenedScreen = owner.findActiveScreenByState(currentState);

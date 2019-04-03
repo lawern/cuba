@@ -23,11 +23,13 @@ public class RouteDefinition {
     protected final String path;
     protected final String parentPrefix;
     protected final boolean root;
+    protected final boolean publicPage;
 
-    public RouteDefinition(String path, String parentPrefix, boolean root) {
+    public RouteDefinition(String path, String parentPrefix, boolean root, boolean publicPage) {
         this.path = path;
         this.parentPrefix = parentPrefix;
         this.root = root;
+        this.publicPage = publicPage;
     }
 
     public String getPath() {
@@ -40,6 +42,10 @@ public class RouteDefinition {
 
     public boolean isRoot() {
         return root;
+    }
+
+    public boolean isPublicPage() {
+        return publicPage;
     }
 
     @Override

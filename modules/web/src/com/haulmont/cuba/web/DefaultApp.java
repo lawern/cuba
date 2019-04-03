@@ -97,29 +97,14 @@ public class DefaultApp extends App {
                 // "logout" all UIs with the same UserSession
                 getAppUIs()
                         .stream()
-                        .filter(AppUI::hasAuthenticatedSession)
-                        .filter(ui -> Objects.equals(ui.getCurrentSession(), oldUserSession))
+                        .filter(ui -> ui.hasAuthenticatedSession()
+                                && Objects.equals(ui.getCurrentSession(), oldUserSession))
                         .collect(Collectors.toList())
                         .forEach(ui -> ui.setCurrentSession(userSession));
             }
 
             if (connection.isAuthenticated()) {
-                // notify all UIs bound with different sessions
-                getAppUIs()
-                        .stream()
-                        .filter(ui -> ui.hasAuthenticatedSession()
-                                && !Objects.equals(ui.getCurrentSession(), userSession))
-                        .forEach(ui -> {
-                            Messages messages = beanLocator.get(Messages.class);
-
-                            String sessionChangedCaption = messages.getMainMessage("sessionChangedCaption");
-                            String sessionChanged = messages.getMainMessage("sessionChanged");
-
-                            Notification notification = new Notification(sessionChangedCaption, sessionChanged,
-                                    Notification.Type.WARNING_MESSAGE);
-                            notification.setDelayMsec(-1);
-                            notification.show(ui.getPage());
-                        });
+                notifyMismatchedUIs(userSession);
             }
 
             initializeUi();
@@ -151,6 +136,24 @@ public class DefaultApp extends App {
 
             publishAppLoggedOutEvent(event.getPreviousSession());
         }
+    }
+
+    protected void notifyMismatchedUIs(UserSession userSession) {
+        getAppUIs()
+                .stream()
+                .filter(ui -> ui.hasAuthenticatedSession()
+                        && !Objects.equals(ui.getCurrentSession(), userSession))
+                .forEach(ui -> {
+                    Messages messages = beanLocator.get(Messages.class);
+
+                    String sessionChangedCaption = messages.getMainMessage("sessionChangedCaption");
+                    String sessionChanged = messages.getMainMessage("sessionChanged");
+
+                    Notification notification = new Notification(sessionChangedCaption, sessionChanged,
+                            Notification.Type.WARNING_MESSAGE);
+                    notification.setDelayMsec(-1);
+                    notification.show(ui.getPage());
+                });
     }
 
     protected void userSubstituted(UserSubstitutedEvent event) {

@@ -29,13 +29,11 @@ import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.UiControllerUtils;
 import com.haulmont.cuba.gui.util.OperationResult;
-import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.gui.UrlHandlingMode;
 import com.haulmont.cuba.web.gui.WebWindow;
-import com.haulmont.cuba.web.sys.RedirectHandler;
 import com.haulmont.cuba.web.sys.navigation.accessfilter.NavigationFilter;
 import com.haulmont.cuba.web.sys.navigation.accessfilter.NavigationFilter.AccessCheckResult;
 import com.vaadin.server.Page;
@@ -100,11 +98,6 @@ public class UrlChangeHandler implements InitializingBean {
             return;
         }
 
-        if (!App.getInstance().getConnection().isAuthenticated()) {
-            handleNoAuthNavigation(requestedState);
-            return;
-        }
-
         __handleUrlChange(requestedState);
     }
 
@@ -140,27 +133,6 @@ public class UrlChangeHandler implements InitializingBean {
                 .filter(s -> Objects.equals(requestedState.getStateMark(), getStateMark(s)))
                 .findFirst()
                 .orElse(null);
-    }
-
-    protected void handleNoAuthNavigation(NavigationState requestedState) {
-        if (Objects.equals(ui.getHistory().getNow(), requestedState)) {
-            return;
-        }
-
-        String nestedRoute = requestedState.getNestedRoute();
-        if (StringUtils.isNotEmpty(nestedRoute)) {
-            RedirectHandler redirectHandler = beanLocator.getPrototype(RedirectHandler.NAME, ui);
-            redirectHandler.schedule(requestedState);
-            App.getInstance().setRedirectHandler(redirectHandler);
-
-        } else if (isRootState(requestedState)) {
-            Screen rootScreen = getOpenedScreens().getRootScreenOrNull();
-            if (rootScreen != null) {
-                pushState(getResolvedState(rootScreen).asRoute());
-            }
-        }
-
-        showNotification(messages.getMainMessage("navigation.shouldLogInFirst"));
     }
 
     // Util methods
