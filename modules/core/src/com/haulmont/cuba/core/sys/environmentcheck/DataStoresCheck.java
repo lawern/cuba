@@ -64,14 +64,14 @@ public class DataStoresCheck implements EnvironmentCheck {
                     }
                     connection.close();
                 } catch (SQLException e) {
-                    result.add(new CheckFailedResult("Error connecting to main Database", e));
+                    result.add(new CheckFailedResult("Exception occurred while connecting to main Database", e));
                 } finally {
                     try {
                         if (connection != null) {
                             connection.close();
                         }
                     } catch (SQLException e) {
-                        result.add(new CheckFailedResult("Exception while closing connection to main Database", e));
+                        result.add(new CheckFailedResult("Exception occurred while closing connection to main Database", e));
                     }
                 }
             } else {
@@ -80,14 +80,14 @@ public class DataStoresCheck implements EnvironmentCheck {
                     connection = dataSource.getConnection();
                     connection.getMetaData();
                 } catch (SQLException e) {
-                    result.add(new CheckFailedResult("Error connecting to main Database", e));
+                    result.add(new CheckFailedResult("Exception occurred while connecting to main Database", e));
                 } finally {
                     try {
                         if (connection != null) {
                             connection.close();
                         }
                     } catch (SQLException e) {
-                        result.add(new CheckFailedResult("Exception while closing connection to main Database", e));
+                        result.add(new CheckFailedResult("Exception occurred while closing connection to main Database", e));
                     }
                 }
             }
@@ -113,7 +113,7 @@ public class DataStoresCheck implements EnvironmentCheck {
                     }
                 } catch (SQLException e) {
                     result.add(new CheckFailedResult(
-                            String.format("Error connecting to additional Data Store: %s", storeName),
+                            String.format("Exception occurred while connecting to additional Data Store: %s", storeName),
                             e));
                 } finally {
                     try {
@@ -122,7 +122,7 @@ public class DataStoresCheck implements EnvironmentCheck {
                         }
                     } catch (SQLException e) {
                         result.add(new CheckFailedResult(
-                                String.format("Exception while closing connection to additional Data Store: %s", storeName),
+                                String.format("Exception occurred while closing connection to additional Data Store: %s", storeName),
                                 e));
                     }
                 }

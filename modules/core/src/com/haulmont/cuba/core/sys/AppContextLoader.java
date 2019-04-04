@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -82,6 +81,17 @@ public class AppContextLoader extends AbstractWebAppContextLoader {
 
         log.info("DbmsType of the main database is set to " + DbmsType.getType() + DbmsType.getVersion());
 
+        runEnvironmentSanityChecks();
+        // Init persistence.xml
+        Stores.getAll().forEach(AppContextLoader::createPersistenceXml);
+    }
+
+    @Override
+    protected ClassPathXmlApplicationContext createApplicationContext(String[] locations) {
+        return new CubaCoreApplicationContext(locations);
+    }
+
+    protected void runEnvironmentSanityChecks() {
         EnvironmentChecks checks = new EnvironmentChecks();
         checks.addCheck(new JvmCheck());
         checks.addCheck(new DirectoriesCheck());
@@ -91,23 +101,14 @@ public class AppContextLoader extends AbstractWebAppContextLoader {
             StringBuilder results = new StringBuilder();
             results.append("\n=================================================================" +
                     "\nSome of environment sanity checks failed:");
-            for (CheckFailedResult result : checksResult){
+            for (CheckFailedResult result : checksResult) {
                 results.append("\n");
                 results.append(result.getMessage());
             }
             results.append("\n=================================================================");
             log.warn(results.toString());
-        }
-        else {
+        } else {
             log.info("Environment checks completed successfully");
         }
-
-        // Init persistence.xml
-        Stores.getAll().forEach(AppContextLoader::createPersistenceXml);
-    }
-
-    @Override
-    protected ClassPathXmlApplicationContext createApplicationContext(String[] locations) {
-        return new CubaCoreApplicationContext(locations);
     }
 }
