@@ -16,6 +16,7 @@
 
 package com.haulmont.cuba.web.sys.navigation;
 
+import com.google.common.collect.ImmutableList;
 import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.chile.core.model.MetaClass;
@@ -36,6 +37,7 @@ import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.app.ui.navigation.notfoundwindow.NotFoundScreen;
 import com.haulmont.cuba.web.gui.WebWindow;
 import com.haulmont.cuba.web.sys.navigation.accessfilter.NavigationFilter;
+import com.haulmont.cuba.web.sys.navigation.navigationhandler.*;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,9 +60,6 @@ public class ScreenNavigator {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenNavigator.class);
 
-    protected UrlChangeHandler owner;
-    protected AppUI ui;
-
     @Inject
     protected WindowConfig windowConfig;
     @Inject
@@ -70,9 +69,21 @@ public class ScreenNavigator {
     @Inject
     protected Security security;
 
+    protected UrlChangeHandler owner;
+    protected AppUI ui;
+
+    protected List<NavigationHandler> navigationHandlers;
+
+    @SuppressWarnings("unused")
     public ScreenNavigator(UrlChangeHandler owner, AppUI ui) {
         this.owner = owner;
         this.ui = ui;
+
+        navigationHandlers = ImmutableList.of(
+                new RootNavigationHandler(),
+                new NestedNavigationHandler(),
+                new ParamsNavigationHandler(),
+                new NoopNavigationHandler());
     }
 
     /**
@@ -82,21 +93,9 @@ public class ScreenNavigator {
     }
 
     public void handleScreenNavigation(NavigationState requestedState) {
-        if (handleRootChange(requestedState)) {
-            return;
-        }
-        if (handleScreenChange(requestedState)) {
-            return;
-        }
-        if (handleParamsChange(requestedState)) {
-            return;
-        }
-        if (handleCurrentRootNavigation(requestedState)) {
-            return;
-        }
-
-        log.debug("Unable to handle screen navigation for requested state: {}", requestedState);
-        owner.revertNavigationState();
+        for (NavigationHandler handler : navigationHandlers)
+            if (handler.doHandle(requestedState))
+                return;
     }
 
     protected boolean handleRootChange(NavigationState requestedState) {
