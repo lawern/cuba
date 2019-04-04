@@ -1144,6 +1144,26 @@
         <xs:attribute name="useUserTimezone" type="xs:boolean"/>
     </xs:complexType>
 
+    <xs:complexType name="constraintsType">
+        <xs:all>
+            <xs:element name="notEmpty" minOccurs="0" maxOccurs="1" type="constraintType"/>
+            <xs:element name="notBlank" minOccurs="0" maxOccurs="1" type="constraintType"/>
+            <xs:element name="regexp" minOccurs="0" maxOccurs="1" type="regexpConstraintType"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="constraintType">
+        <xs:attribute name="message" type="resourceString"/>
+    </xs:complexType>
+
+    <xs:complexType name="regexpConstraintType">
+        <xs:complexContent>
+            <xs:extension base="constraintType">
+                <xs:attribute name="regexp" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="validatorType" mixed="true">
         <xs:attribute name="class" type="defaultValidator"/>
         <xs:attribute name="message" type="xs:string"/>
@@ -1391,6 +1411,7 @@
             <xs:extension base="baseFieldComponent">
                 <xs:sequence>
                     <xs:element name="validator" minOccurs="0" maxOccurs="unbounded" type="validatorType"/>
+                    <xs:element name="constraints" minOccurs="0" maxOccurs="1" type="constraintsType"/>
                 </xs:sequence>
 
                 <xs:attributeGroup ref="hasTabIndex"/>

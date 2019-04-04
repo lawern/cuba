@@ -16,6 +16,7 @@
 
 package com.haulmont.cuba.gui.components.validators.constrainsts;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.haulmont.cuba.gui.components.ValidationException;
 
@@ -26,11 +27,15 @@ public class RegexpValidator<T extends String> extends AbstractValidator<T> {
     protected Pattern pattern;
 
     public RegexpValidator(String regexp) {
+        Preconditions.checkNotNull(regexp);
+
         this.errorMessage = messages.getMainMessage("validation.constraints.regexp");
         this.pattern = Pattern.compile(regexp);
     }
 
     public RegexpValidator(String regexp, String errorMessage) {
+        Preconditions.checkNotNull(regexp);
+
         this.errorMessage = errorMessage;
         this.pattern = Pattern.compile(regexp);
     }

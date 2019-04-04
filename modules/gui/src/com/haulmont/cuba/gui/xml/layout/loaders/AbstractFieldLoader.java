@@ -18,10 +18,12 @@ package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.chile.core.datatypes.Datatypes;
 import com.haulmont.chile.core.model.MetaProperty;
-import com.haulmont.chile.core.model.MetaPropertyPath;
 import com.haulmont.cuba.gui.components.Buffered;
 import com.haulmont.cuba.gui.components.Field;
 import com.haulmont.cuba.gui.components.HasDatatype;
+import com.haulmont.cuba.gui.components.validators.constrainsts.NotBlankValidator;
+import com.haulmont.cuba.gui.components.validators.constrainsts.NotEmptyValidator;
+import com.haulmont.cuba.gui.components.validators.constrainsts.RegexpValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
@@ -51,6 +53,8 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
         loadContextHelp(resultComponent, element);
 
         loadValidators(resultComponent, element);
+        loadConstraints(resultComponent, element);
+
         loadRequired(resultComponent, element);
 
         loadHeight(resultComponent, element);
@@ -88,6 +92,47 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
             Field.Validator validator = getDefaultValidator(property);
             if (validator != null) {
                 component.addValidator(validator);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void loadConstraints(Field component, Element element) {
+        Element constraints = element.element("constraints");
+        if (constraints != null) {
+            Element notEmpty = constraints.element("notEmpty");
+            if (notEmpty != null) {
+                NotEmptyValidator notEmptyValidator = new NotEmptyValidator();
+                String message = notEmpty.attributeValue("message");
+                if (message != null) {
+                    notEmptyValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(notEmptyValidator);
+            }
+
+            Element notBlank = constraints.element("notBlank");
+            if (notBlank != null) {
+                NotBlankValidator notBlankValidator = new NotBlankValidator<>();
+                String message = notBlank.attributeValue("message");
+                if (message != null) {
+                    notBlankValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(notBlankValidator);
+            }
+
+            Element regexpElement = constraints.element("regexp");
+            if (regexpElement != null) {
+                String regexp = regexpElement.attributeValue("regexp");
+                RegexpValidator regexpValidator = new RegexpValidator<>(regexp);
+
+                String message = regexpElement.attributeValue("message");
+                if (message != null) {
+                    regexpValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(regexpValidator);
             }
         }
     }
