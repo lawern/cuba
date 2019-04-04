@@ -32,7 +32,6 @@ import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.screen.compatibility.LegacyFrame;
 import com.haulmont.cuba.security.entity.EntityOp;
 import com.haulmont.cuba.security.entity.PermissionType;
-import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.app.ui.navigation.notfoundwindow.NotFoundScreen;
 import com.haulmont.cuba.web.gui.WebWindow;
@@ -100,53 +99,14 @@ public class ScreenNavigator {
         owner.revertNavigationState();
     }
 
-    protected boolean handleCurrentRootNavigation(NavigationState requestedState) {
-        if (!currentRootNavigated(requestedState)) {
-
-            return true;
-        }
-
-        for (Screens.WindowStack windowStack : owner.getOpenedScreens().getWorkAreaStacks()) {
-            boolean closed = owner.closeWindowStack(windowStack);
-            if (!closed) {
-                owner.revertNavigationState();
-                return true;
-            }
-        }
-
-        return true;
-    }
-
-    protected boolean currentRootNavigated(NavigationState requestedState) {
-        return !owner.isRootState(ui.getHistory().getNow())
-                && owner.isRootState(requestedState);
-    }
-
     protected boolean handleRootChange(NavigationState requestedState) {
-        if (!rootChanged(requestedState)
-                || NavigationState.EMPTY == requestedState) {
+        if (isEmptyState(requestedState)
+                || !rootChanged(requestedState)) {
             return false;
-        }
-
-        NavigationFilter.AccessCheckResult result = owner.navigationAllowed(requestedState);
-        if (result.isRejected()) {
-            if (StringUtils.isNotEmpty(result.getMessage())) {
-                owner.showNotification(result.getMessage());
-            }
-            owner.revertNavigationState();
-            return true;
         }
 
         WindowInfo windowInfo = windowConfig.findWindowInfoByRoute(requestedState.getRoot());
         if (windowInfo != null) {
-            if (!windowInfo.getRouteDefinition().isPublicPage()
-                    && !App.getInstance().getConnection().isAuthenticated()) {
-                owner.showNotification("Please log in first");
-                owner.revertNavigationState();
-
-                return true;
-            }
-
             ui.getScreens()
                     .create(windowInfo.getId(), OpenMode.ROOT)
                     .show();
@@ -155,6 +115,10 @@ public class ScreenNavigator {
         }
 
         return true;
+    }
+
+    protected boolean isEmptyState(NavigationState requestedState) {
+        return NavigationState.EMPTY == requestedState;
     }
 
     protected boolean rootChanged(NavigationState requestedState) {
@@ -243,7 +207,7 @@ public class ScreenNavigator {
     }
 
     protected boolean screenChanged(NavigationState requestedState) {
-        if (NavigationState.EMPTY == requestedState
+        if (isEmptyState(requestedState)
                 || owner.isRootState(requestedState)) {
             return false;
         }
@@ -303,10 +267,10 @@ public class ScreenNavigator {
             throw new AccessDeniedException(PermissionType.SCREEN, windowInfo.getId());
         }
 
-        NavigationFilter.AccessCheckResult accessCheckResult = owner.navigationAllowed(requestedState);
-        if (accessCheckResult.isRejected()) {
-            if (StringUtils.isNotEmpty(accessCheckResult.getMessage())) {
-                owner.showNotification(accessCheckResult.getMessage());
+        NavigationFilter.AccessCheckResult result = owner.navigationAllowed(requestedState);
+        if (result.isRejected()) {
+            if (StringUtils.isNotEmpty(result.getMessage())) {
+                owner.showNotification(result.getMessage());
             }
             owner.revertNavigationState();
 
@@ -513,20 +477,35 @@ public class ScreenNavigator {
         return true;
     }
 
+    protected boolean handleCurrentRootNavigation(NavigationState requestedState) {
+        if (!currentRootNavigated(requestedState)) {
+            return true;
+        }
+
+        for (Screens.WindowStack windowStack : owner.getOpenedScreens().getWorkAreaStacks()) {
+            boolean closed = owner.closeWindowStack(windowStack);
+            if (!closed) {
+                owner.revertNavigationState();
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean currentRootNavigated(NavigationState requestedState) {
+        NavigationState currentState = ui.getHistory().getNow();
+        return !owner.isRootState(currentState)
+                && owner.isRootState(requestedState);
+    }
+
     protected void handle404(String route) {
         Map<String, Object> params = ParamsMap.of("requestedRoute", route);
         MapScreenOptions options = new MapScreenOptions(params);
 
-        ui.getScreens().create(NotFoundScreen.class, OpenMode.NEW_TAB, options)
+        ui.getScreens()
+                .create(NotFoundScreen.class, OpenMode.NEW_TAB, options)
                 .show();
-    }
-
-    protected boolean navigationIsNotPermitted(WindowInfo windowInfo) {
-        WindowInfo loginWindowInfo = windowConfig.getWindowInfo("loginWindow");
-        WindowInfo mainWindowInfo = windowConfig.getWindowInfo("mainWindow");
-
-        return loginWindowInfo.equals(windowInfo)
-                || mainWindowInfo.equals(windowInfo);
     }
 
     protected boolean paramsChanged(NavigationState requestedState) {
