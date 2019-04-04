@@ -274,6 +274,11 @@ public class TestTextField implements TextField<String> {
     }
 
     @Override
+    public void addValidators(Consumer<? super String>... validators) {
+
+    }
+
+    @Override
     public void removeValidator(Consumer validator) {
 
     }

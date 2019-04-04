@@ -616,6 +616,13 @@ public class WebDateField<V extends Comparable<V>>
     }
 
     @Override
+    public void addValidators(Consumer<? super V>... validators) {
+        for (Consumer<? super V> validator : validators) {
+            addValidator(validator);
+        }
+    }
+
+    @Override
     public void removeValidator(Consumer<V> validator) {
         if (validators != null) {
             validators.remove(validator);
