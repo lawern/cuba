@@ -1149,6 +1149,9 @@
             <xs:element name="notEmpty" minOccurs="0" maxOccurs="1" type="constraintType"/>
             <xs:element name="notBlank" minOccurs="0" maxOccurs="1" type="constraintType"/>
             <xs:element name="regexp" minOccurs="0" maxOccurs="1" type="regexpConstraintType"/>
+            <xs:element name="size" minOccurs="0" maxOccurs="1" type="sizeConstraintType"/>
+            <xs:element name="mustBeNull" minOccurs="0" maxOccurs="1" type="constraintType"/>
+            <xs:element name="mustBeNotNull" minOccurs="0" maxOccurs="1" type="constraintType"/>
         </xs:all>
     </xs:complexType>
 
@@ -1160,6 +1163,15 @@
         <xs:complexContent>
             <xs:extension base="constraintType">
                 <xs:attribute name="regexp" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="sizeConstraintType">
+        <xs:complexContent>
+            <xs:extension base="constraintType">
+                <xs:attribute name="min" type="xs:integer"/>
+                <xs:attribute name="max" type="xs:integer"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

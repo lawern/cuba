@@ -18,12 +18,11 @@ package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.chile.core.datatypes.Datatypes;
 import com.haulmont.chile.core.model.MetaProperty;
+import com.haulmont.cuba.gui.GuiDevelopmentException;
 import com.haulmont.cuba.gui.components.Buffered;
 import com.haulmont.cuba.gui.components.Field;
 import com.haulmont.cuba.gui.components.HasDatatype;
-import com.haulmont.cuba.gui.components.validators.constrainsts.NotBlankValidator;
-import com.haulmont.cuba.gui.components.validators.constrainsts.NotEmptyValidator;
-import com.haulmont.cuba.gui.components.validators.constrainsts.RegexpValidator;
+import com.haulmont.cuba.gui.components.validators.constrainsts.*;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
@@ -133,6 +132,60 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
                 }
 
                 component.addValidator(regexpValidator);
+            }
+
+            Element sizeElement = constraints.element("size");
+            if (sizeElement != null) {
+                SizeValidator sizeValidator = new SizeValidator();
+
+                String min = sizeElement.attributeValue("min");
+                if (min != null) {
+                    int minValue = Integer.parseInt(min);
+                    if (minValue < 0) {
+                        throw new GuiDevelopmentException("Min value must be greater or equal to 0",
+                                context.getFullFrameId());
+                    }
+                    sizeValidator.withMin(minValue);
+                }
+
+                String max = sizeElement.attributeValue("max");
+                if (max != null) {
+                    int maxValue = Integer.parseInt(max);
+                    if (maxValue < 0) {
+                        throw new GuiDevelopmentException("Max value must be greater or equal to 0",
+                                context.getFullFrameId());
+                    }
+                    sizeValidator.withMax(maxValue);
+                }
+
+                String message = sizeElement.attributeValue("message");
+                if (message != null) {
+                    sizeValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(sizeValidator);
+            }
+
+            Element mustBeNullElement = constraints.element("mustBeNull");
+            if (mustBeNullElement != null) {
+                NullValidator nullValidator = new NullValidator<>();
+                String message = mustBeNullElement.attributeValue("message");
+                if (message != null) {
+                    nullValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(nullValidator);
+            }
+
+            Element mustBeNotNullElement = constraints.element("mustBeNotNull");
+            if (mustBeNotNullElement != null) {
+                NotNullValidator notNullValidator = new NotNullValidator<>();
+                String message = mustBeNotNullElement.attributeValue("message");
+                if (message != null) {
+                    notNullValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(notNullValidator);
             }
         }
     }
