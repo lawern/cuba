@@ -28,6 +28,7 @@ import com.haulmont.cuba.gui.navigation.NavigationState;
 import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.UiControllerUtils;
+import com.haulmont.cuba.gui.sys.RouteDefinition;
 import com.haulmont.cuba.gui.util.OperationResult;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.WebConfig;
@@ -113,7 +114,7 @@ public class UrlChangeHandler implements InitializingBean {
     }
 
     @Nullable
-    protected Screen getActiveScreen() {
+    public Screen getActiveScreen() {
         Iterator<Screen> dialogsIterator = getOpenedScreens().getDialogScreens().iterator();
         if (dialogsIterator.hasNext()) {
             return dialogsIterator.next();
@@ -142,7 +143,7 @@ public class UrlChangeHandler implements InitializingBean {
         ui.getPage().open(url, "_self");
     }
 
-    protected boolean isRootState(NavigationState requestedState) {
+    public boolean isRootState(NavigationState requestedState) {
         return StringUtils.isEmpty(requestedState.getStateMark())
                 && StringUtils.isEmpty(requestedState.getNestedRoute());
     }
@@ -157,13 +158,13 @@ public class UrlChangeHandler implements InitializingBean {
             return false;
         }
 
-        String screenId = UiControllerUtils.getScreenContext(rootScreen)
+        RouteDefinition routeDefinition = UiControllerUtils.getScreenContext(rootScreen)
                 .getWindowInfo()
-                .getId();
+                .getRouteDefinition();
 
-        String rootScreenRoute = windowConfig.findRoute(screenId);
-
-        return Objects.equals(requestedState.getRoot(), rootScreenRoute);
+        return routeDefinition != null
+                && routeDefinition.isRoot()
+                && StringUtils.equals(routeDefinition.getPath(), requestedState.getRoot());
     }
 
     protected String getStateMark(Screen screen) {
@@ -171,7 +172,7 @@ public class UrlChangeHandler implements InitializingBean {
         return String.valueOf(webWindow.getUrlStateMark());
     }
 
-    protected Screen findActiveScreenByState(NavigationState requestedState) {
+    public Screen findActiveScreenByState(NavigationState requestedState) {
         Screen screen = findScreenByState(getOpenedScreens().getActiveScreens(), requestedState);
 
         if (screen == null && isCurrentRootState(requestedState)) {
@@ -201,7 +202,7 @@ public class UrlChangeHandler implements InitializingBean {
         }
     }
 
-    protected void showNotification(String msg) {
+    public void showNotification(String msg) {
         ui.getNotifications()
                 .create(NotificationType.TRAY)
                 .withCaption(msg)
@@ -221,13 +222,13 @@ public class UrlChangeHandler implements InitializingBean {
         return UrlHandlingMode.URL_ROUTES != webConfig.getUrlHandlingMode();
     }
 
-    protected NavigationState getResolvedState(Screen screen) {
+    public NavigationState getResolvedState(Screen screen) {
         return screen != null
                 ? ((WebWindow) screen.getWindow()).getResolvedState()
                 : NavigationState.EMPTY;
     }
 
-    protected AccessCheckResult navigationAllowed(NavigationState requestedState) {
+    public AccessCheckResult navigationAllowed(NavigationState requestedState) {
         for (NavigationFilter filter : accessFilters) {
             AccessCheckResult result = filter.allowed(ui.getHistory().getNow(), requestedState);
             if (result.isRejected()) {

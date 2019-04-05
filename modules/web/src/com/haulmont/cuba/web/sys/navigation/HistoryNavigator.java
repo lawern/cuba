@@ -83,7 +83,7 @@ public class HistoryNavigator {
 
                     owner.getScreenNavigator().handleCurrentRootNavigation(requestedState);
                 } else {
-                    owner.getScreenNavigator().handleRootChange(requestedState);
+                    owner.getScreenNavigator().handleScreenNavigation(requestedState);
                 }
             }
         }

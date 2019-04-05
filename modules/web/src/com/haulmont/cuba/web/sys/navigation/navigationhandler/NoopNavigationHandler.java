@@ -17,11 +17,26 @@
 package com.haulmont.cuba.web.sys.navigation.navigationhandler;
 
 import com.haulmont.cuba.gui.navigation.NavigationState;
+import com.haulmont.cuba.web.AppUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
-public class NoopNavigationHandler implements NavigationHandler {
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+@Order(NavigationHandler.LOWEST_PLATFORM_PRECEDENCE - 10)
+public class NoopNavigationHandler extends AbstractNavigationHandler implements NavigationHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(NoopNavigationHandler.class);
 
     @Override
-    public boolean doHandle(NavigationState requestedState) {
+    public boolean doHandle(NavigationState requestedState, AppUI ui) {
+        log.info("Failed to handle a route: '{}'", requestedState.asRoute());
+        revertNavigationState(ui);
+
         return false;
     }
 }

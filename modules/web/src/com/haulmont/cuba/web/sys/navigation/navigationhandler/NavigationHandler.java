@@ -17,8 +17,36 @@
 package com.haulmont.cuba.web.sys.navigation.navigationhandler;
 
 import com.haulmont.cuba.gui.navigation.NavigationState;
+import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.sys.navigation.ScreenNavigator;
+import com.haulmont.cuba.web.sys.navigation.UrlChangeHandler;
 
+/**
+ * Classes that implement this interface are intended for handling URL navigation.
+ *
+ * @see UrlChangeHandler
+ * @see ScreenNavigator
+ */
 public interface NavigationHandler {
 
-    boolean doHandle(NavigationState requestedState);
+    /**
+     * Defines the highest precedence for {@link org.springframework.core.Ordered} or
+     * {@link org.springframework.core.annotation.Order} navigation handlers.
+     */
+    int HIGHEST_PLATFORM_PRECEDENCE = 100;
+
+    /**
+     * Defines the lowest precedence for {@link org.springframework.core.Ordered} or
+     * {@link org.springframework.core.annotation.Order} navigation handlers.
+     */
+    int LOWEST_PLATFORM_PRECEDENCE = 1000;
+
+    /**
+     * Handles requested state.
+     *
+     * @param requestedState requested state represented by {@link NavigationState} instance
+     * @param ui             current UI
+     * @return true if {@code requestedState} is fully handled by the handler or false otherwise
+     */
+    boolean doHandle(NavigationState requestedState, AppUI ui);
 }

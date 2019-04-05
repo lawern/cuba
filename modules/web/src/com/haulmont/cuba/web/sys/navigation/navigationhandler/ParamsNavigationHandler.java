@@ -17,11 +17,57 @@
 package com.haulmont.cuba.web.sys.navigation.navigationhandler;
 
 import com.haulmont.cuba.gui.navigation.NavigationState;
+import com.haulmont.cuba.gui.navigation.UrlParamsChangedEvent;
+import com.haulmont.cuba.gui.screen.Screen;
+import com.haulmont.cuba.gui.screen.UiControllerUtils;
+import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.sys.navigation.UrlChangeHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
-public class ParamsNavigationHandler implements NavigationHandler {
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+@Order(NavigationHandler.LOWEST_PLATFORM_PRECEDENCE - 20)
+public class ParamsNavigationHandler extends AbstractNavigationHandler implements NavigationHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ParamsNavigationHandler.class);
 
     @Override
-    public boolean doHandle(NavigationState requestedState) {
-        return false;
+    public boolean doHandle(NavigationState requestedState, AppUI ui) {
+        if (!paramsChanged(requestedState, ui.getUrlChangeHandler())) {
+            return false;
+        }
+
+        Screen screen = ui.getUrlChangeHandler().findActiveScreenByState(requestedState);
+        if (screen == null) {
+            log.debug("Unable to find a screen for state: '{}", requestedState);
+            return true;
+        }
+
+        Map<String, String> params = requestedState.getParams() != null
+                ? requestedState.getParams()
+                : Collections.emptyMap();
+
+        UiControllerUtils.fireEvent(screen, UrlParamsChangedEvent.class,
+                new UrlParamsChangedEvent(screen, params));
+
+        return true;
+    }
+
+    protected boolean paramsChanged(NavigationState requestedState, UrlChangeHandler urlChangeHandler) {
+        Screen activeScreen = urlChangeHandler.getActiveScreen();
+
+        String currentParams = urlChangeHandler.getResolvedState(activeScreen)
+                .getParamsString();
+
+        return !Objects.equals(currentParams, requestedState.getParamsString());
     }
 }

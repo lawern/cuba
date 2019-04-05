@@ -16,12 +16,73 @@
 
 package com.haulmont.cuba.web.sys.navigation.navigationhandler;
 
+import com.haulmont.cuba.gui.config.WindowConfig;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.navigation.NavigationState;
+import com.haulmont.cuba.gui.screen.OpenMode;
+import com.haulmont.cuba.gui.screen.Screen;
+import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.gui.WebWindow;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
+
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+@Order(NavigationHandler.LOWEST_PLATFORM_PRECEDENCE - 40)
 public class RootNavigationHandler extends AbstractNavigationHandler implements NavigationHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(RootNavigationHandler.class);
+
+    @Inject
+    protected WindowConfig windowConfig;
+
     @Override
-    public boolean doHandle(NavigationState requestedState) {
-        return false;
+    public boolean doHandle(NavigationState requestedState, AppUI ui) {
+        if (isEmptyState(requestedState)
+                || !isRootChanged(requestedState, ui)) {
+            return false;
+        }
+
+        WindowInfo windowInfo = windowConfig.findWindowInfoByRoute(requestedState.getRoot());
+        if (windowInfo == null) {
+            log.info("Unable to perform navigation to requested state '{}'", requestedState);
+            revertNavigationState(ui);
+            return true;
+        }
+
+        ui.getScreens()
+                .create(windowInfo.getId(), OpenMode.ROOT)
+                .show();
+
+        return fullyHandled(requestedState);
+    }
+
+    protected boolean fullyHandled(NavigationState requestedState) {
+        return StringUtils.isNotEmpty(requestedState.getNestedRoute())
+                || MapUtils.isNotEmpty(requestedState.getParams());
+    }
+
+    protected boolean isRootChanged(NavigationState requestedState, AppUI ui) {
+        Screen rootScreen = ui.getScreens()
+                .getOpenedScreens()
+                .getRootScreenOrNull();
+
+        if (rootScreen == null) {
+            return false;
+        }
+
+        String rootRoute = ((WebWindow) rootScreen.getWindow())
+                .getResolvedState()
+                .getRoot();
+
+        return !StringUtils.equals(rootRoute, requestedState.getRoot());
     }
 }
