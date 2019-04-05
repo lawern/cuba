@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.haulmont.bali.util.Dom4j;
+import com.haulmont.chile.core.annotations.Composition;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.core.global.MessageTools;
@@ -53,17 +54,14 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.persistence.ManyToMany;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 
@@ -328,17 +326,91 @@ public class ScreensHelper {
 
     protected boolean isEntityAvailableInDataContainer(Element window, Class<? extends FrameOwner> controllerClass,
                                                        Class entityClass, ScreenType filterScreenType) {
+
         Element data = window.element("data");
         if (data == null) {
             return false;
         }
-
-        String containerId = getDataContainerId(window, controllerClass, filterScreenType);
-        if (Strings.isNullOrEmpty(containerId)) {
+        if (!checkWindowType(controllerClass, filterScreenType)) {
             return false;
         }
+        List<Element> dataContainers = data.elements();
+        List<String> dataContainerIds = dataContainers.stream()
+                .filter(dc -> isEntityAvailableInDataElement(entityClass, dc))
+                .map(dc -> dc.attributeValue("id"))
+                .collect(Collectors.toList());
+        if (!ScreenType.BROWSER.equals(filterScreenType)) {
+            dataContainerIds.addAll(getDataContainersForComposition(data, controllerClass, entityClass));
+        }
+        if (dataContainerIds.size() == 0) {
+            return false;
+        }
+        List<Element> formsAndTables =  elementsByNames(window, Arrays.asList("form", "table", "groupTable"));
+        if (formsAndTables.size() == 0) {
+            return false;
+        }
+        long countOfUsage = formsAndTables.stream()
+                .filter(e -> dataContainerIds.contains(e.attributeValue("dataContainer"))).count();
 
-        return isEntityAvailableInDataElement(entityClass, data, containerId);
+        return countOfUsage > 0;
+    }
+
+    protected boolean checkWindowType(Class<? extends FrameOwner> controllerClass, ScreenType filterScreenType) {
+        if (ScreenType.ALL.equals(filterScreenType)) {
+            return true;
+        }
+        EditedEntityContainer editedAnnotation = controllerClass.getAnnotation(EditedEntityContainer.class);
+        LookupComponent lookupAnnotation = controllerClass.getAnnotation(LookupComponent.class);
+        if (ScreenType.EDITOR.equals(filterScreenType) && editedAnnotation != null) {
+            return true;
+        }
+        return ScreenType.BROWSER.equals(filterScreenType) && lookupAnnotation != null;
+    }
+
+    protected List<String> getDataContainersForComposition(Element data, Class<? extends FrameOwner> controllerClass,
+                                                           Class entityClass) {
+        List<String> dataContainerIds = new ArrayList<>();
+        String editedEntityDcId = resolveEditedEntityContainerId(controllerClass);
+        if (Strings.isNullOrEmpty(editedEntityDcId)) {
+            return dataContainerIds;
+        }
+        Element editedEntityDc = elementByID(data, editedEntityDcId);
+        if (editedEntityDc == null) {
+            return dataContainerIds;
+        }
+        String editedEntityClassName = editedEntityDc.attributeValue("class");
+        try {
+            Class editedEntityClass = this.getClass().getClassLoader().loadClass(editedEntityClassName);
+            List<String> fieldNames = getCompositionAndAssociationFieldNames(editedEntityClass, entityClass);
+            for (Element e: editedEntityDc.elements()){
+                for (String fieldName: fieldNames) {
+                    if (fieldName.equals(e.attributeValue("property"))) {
+                        dataContainerIds.add(e.attributeValue("id"));
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            log.error("Can't load class by class name.", e);
+        }
+        return dataContainerIds;
+    }
+
+    protected List<String> getCompositionAndAssociationFieldNames(Class editedEntityClass, Class targetEntityClass){
+        return Arrays.stream(editedEntityClass.getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(Composition.class)
+                        || f.isAnnotationPresent(ManyToMany.class))
+                .filter(f -> checkFieldType(f, targetEntityClass))
+                .map(Field::getName)
+                .collect(Collectors.toList());
+    }
+
+    protected boolean checkFieldType(Field field, Class entityClass) {
+        Type type = field.getGenericType();
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type[] actualTypes = parameterizedType.getActualTypeArguments();
+            return actualTypes.length > 0 && isEntityAvailableForClass(entityClass, actualTypes[0].getTypeName());
+        } else return isEntityAvailableForClass(entityClass, type.getTypeName());
     }
 
     protected boolean isEntityAvailableInDatasource(Element window, Class entityClass, ScreenType filterScreenType) {
@@ -355,51 +427,39 @@ public class ScreensHelper {
         return isEntityAvailableInDataElement(entityClass, dsContext, datasourceId);
     }
 
-    protected boolean isEntityAvailableInDataElement(Class entityClass, Element dataElement, String datasourceId) {
-        Element datasource = elementByID(dataElement, datasourceId);
-        if (datasource == null) {
-            return false;
-        }
-
-        String dsClassValue = datasource.attributeValue("class");
-        if (StringUtils.isEmpty(dsClassValue)) {
-            return false;
-        }
-
+    protected boolean isEntityAvailableForClass(Class entityClass, String className) {
         Class entity = entityClass;
         boolean isAvailable;
         boolean process;
         do {
-            isAvailable = dsClassValue.equals(entity.getName());
+            isAvailable = className.equals(entity.getName());
             entity = entity.getSuperclass();
             process = metadata.getClass(entity) != null && metadataTools.isPersistent(entity);
         } while (process && !isAvailable);
         return isAvailable;
     }
 
-
-    @Nullable
-    protected String getDataContainerId(Element window,
-                                        Class<? extends FrameOwner> controllerClass, ScreenType filterScreenType) {
-        String windowDc = resolveEditedEntityContainerId(controllerClass);
-        String lookupDc = resolveLookupDataContainer(window, controllerClass);
-
-        if (filterScreenType == ScreenType.ALL) {
-            return windowDc != null ? windowDc : lookupDc;
-        } else {
-            return filterScreenType == ScreenType.BROWSER ? lookupDc : windowDc;
+    protected boolean isEntityAvailableInDataElement(Class entityClass, Element dataContainer) {
+        if (dataContainer == null) {
+            return false;
         }
+
+        String dsClassValue = dataContainer.attributeValue("class");
+        if (StringUtils.isEmpty(dsClassValue)) {
+            return false;
+        }
+
+        return isEntityAvailableForClass(entityClass, dsClassValue);
+    }
+
+    protected boolean isEntityAvailableInDataElement(Class entityClass, Element dataElement, String datasourceId) {
+        Element datasource = elementByID(dataElement, datasourceId);
+        return isEntityAvailableInDataElement(entityClass, datasource);
     }
 
     @Nullable
     protected String resolveEditedEntityContainerId(Class<? extends FrameOwner> controllerClass) {
         EditedEntityContainer annotation = controllerClass.getAnnotation(EditedEntityContainer.class);
-        return annotation != null ? annotation.value() : null;
-    }
-
-    @Nullable
-    protected String resolveLookupComponentId(Class<? extends FrameOwner> controllerClass) {
-        LookupComponent annotation = controllerClass.getAnnotation(LookupComponent.class);
         return annotation != null ? annotation.value() : null;
     }
 
@@ -414,19 +474,6 @@ public class ScreensHelper {
         } else {
             return windowDatasource;
         }
-    }
-
-    @Nullable
-    protected String resolveLookupDataContainer(Element window, Class<? extends FrameOwner> controllerClass) {
-        String lookupId = resolveLookupComponentId(controllerClass);
-        if (Strings.isNullOrEmpty(lookupId)) {
-            return null;
-        }
-
-        Element lookupElement = elementByID(window, lookupId);
-        return lookupElement != null
-                ? findLookupElementDataAttributeId(lookupElement, "dataContainer")
-                : null;
     }
 
     @Nullable
@@ -472,6 +519,19 @@ public class ScreensHelper {
             }
         }
         return null;
+    }
+
+    protected List<Element> elementsByNames(Element root, List<String> names) {
+        List<Element> result = new ArrayList<>();
+        for (Element element: root.elements()) {
+            String name = element.getName();
+            if (names.contains(name)) {
+                result.add(element);
+            } else {
+                result.addAll(elementsByNames(element, names));
+            }
+        }
+        return result;
     }
 
     @Nullable
