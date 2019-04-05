@@ -32,6 +32,8 @@ public class SizeValidator<T extends String> extends AbstractValidator<T> {
     }
 
     public SizeValidator<T> withMin(int min) {
+        checkPositiveValue(min, "Min value cannot be less then 0");
+
         this.min = min;
         return this;
     }
@@ -41,6 +43,8 @@ public class SizeValidator<T extends String> extends AbstractValidator<T> {
     }
 
     public SizeValidator<T> withMax(int max) {
+        checkPositiveValue(min, "Max value cannot be less then 0");
+
         this.max = max;
         return this;
     }
@@ -50,6 +54,9 @@ public class SizeValidator<T extends String> extends AbstractValidator<T> {
     }
 
     public SizeValidator<T> withSize(int min, int max) {
+        checkPositiveValue(min, "Min value cannot be less then 0");
+        checkPositiveValue(max, "Max value cannot be less then 0");
+
         this.min = min;
         this.max = max;
         return this;

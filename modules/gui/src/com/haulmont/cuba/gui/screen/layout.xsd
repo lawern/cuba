@@ -1152,6 +1152,7 @@
             <xs:element name="size" minOccurs="0" maxOccurs="1" type="sizeConstraintType"/>
             <xs:element name="mustBeNull" minOccurs="0" maxOccurs="1" type="constraintType"/>
             <xs:element name="mustBeNotNull" minOccurs="0" maxOccurs="1" type="constraintType"/>
+            <xs:element name="negativeOrZero" minOccurs="0" maxOccurs="1" type="constraintType"/>
         </xs:all>
     </xs:complexType>
 

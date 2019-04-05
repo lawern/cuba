@@ -18,7 +18,10 @@ package com.haulmont.cuba.gui.components.validators.constrainsts;
 
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Messages;
+import com.haulmont.cuba.gui.components.validators.constrainsts.tools.*;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 public abstract class AbstractValidator<T> implements Consumer<T> {
@@ -33,5 +36,26 @@ public abstract class AbstractValidator<T> implements Consumer<T> {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    @Nullable
+    protected NumberConstraint getNumberConstraint(Number value) {
+        Class clazz = value.getClass();
+        if (clazz.equals(Integer.class)) {
+            return new IntegerConstraint(value.intValue());
+        } else if (clazz.equals(Long.class) && value.longValue() <= 0) {
+            return new LongConstraint(value.longValue());
+        } else if (clazz.equals(BigDecimal.class)) {
+            return new BigDecimalConstraint((BigDecimal) value);
+        } else if (clazz.equals(Double.class)) {
+            return new DoubleConstraint(value.doubleValue());
+        }
+        return null;
+    }
+
+    protected void checkPositiveValue(long value, String message) {
+        if (value < 0) {
+            throw new IllegalArgumentException(message);
+        }
     }
 }

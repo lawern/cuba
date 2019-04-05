@@ -187,6 +187,17 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
 
                 component.addValidator(notNullValidator);
             }
+
+            Element negativeOrZeroElement = constraints.element("negativeOrZero");
+            if (negativeOrZeroElement != null) {
+                NegativeOrZeroValidator negativeOrZeroValidator = new NegativeOrZeroValidator<>();
+                String message = negativeOrZeroElement.attributeValue("message");
+                if (message != null) {
+                    negativeOrZeroValidator.setErrorMessage(loadResourceString(message));
+                }
+
+                component.addValidator(negativeOrZeroValidator);
+            }
         }
     }
 
