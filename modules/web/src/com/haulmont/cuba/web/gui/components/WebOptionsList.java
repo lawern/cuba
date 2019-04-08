@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.web.gui.components;
 
+import com.haulmont.bali.events.Subscription;
 import com.haulmont.cuba.core.global.MetadataTools;
 import com.haulmont.cuba.gui.components.OptionsList;
 import com.haulmont.cuba.gui.components.data.DataAwareComponentsTools;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,6 +68,8 @@ public class WebOptionsList<V, I> extends WebAbstractField<CubaListSelect, V>
         component.setContainerDataSource(new IndexedContainer());
         component.setItemCaptionGenerator(this::generateItemCaption);
         component.setRequiredError(null);
+
+        component.setDoubleClickHandler(this::onDoubleClick);
 
         attachListener(component);
     }
@@ -276,5 +280,30 @@ public class WebOptionsList<V, I> extends WebAbstractField<CubaListSelect, V>
 
     protected boolean isCollectionValuesChanged(Collection<I> value, Collection<I> oldValue) {
         return value != oldValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void onDoubleClick(Integer itemIndex) {
+        if (hasSubscriptions(DoubleClickEvent.class)) {
+            ContainerOptions container = (ContainerOptions) getOptions();
+            I item = (I) container.getContainer()
+                    .getItems()
+                    .get(itemIndex);
+
+            DoubleClickEvent<I> event = new DoubleClickEvent<>(this, item);
+            publish(DoubleClickEvent.class, event);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Subscription addDoubleClickListener(Consumer<DoubleClickEvent<I>> listener) {
+        return getEventHub().subscribe(DoubleClickEvent.class, (Consumer) listener);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void removeClickListener(Consumer<DoubleClickEvent<I>> listener) {
+        unsubscribe(DoubleClickEvent.class, (Consumer) listener);
     }
 }
