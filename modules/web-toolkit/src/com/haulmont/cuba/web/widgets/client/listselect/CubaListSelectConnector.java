@@ -27,7 +27,7 @@ public class CubaListSelectConnector extends ListSelectConnector {
     protected void init() {
         super.init();
 
-        getWidget().listener = (index) -> getRpcProxy(CubaListSelectServerRpc.class).onDoubleClick(index);
+        getWidget().doubleClickListener = (itemIndex) -> getRpcProxy(CubaListSelectServerRpc.class).onDoubleClick(itemIndex);
     }
 
     @Override

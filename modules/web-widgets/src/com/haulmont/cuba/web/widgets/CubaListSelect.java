@@ -32,7 +32,7 @@ public class CubaListSelect extends ListSelect {
 
     protected Consumer<Integer> doubleClickHandler;
 
-    protected CubaListSelectServerRpc rpc = new CubaListSelectServerRpc() {
+    protected CubaListSelectServerRpc listSelectServerRpc = new CubaListSelectServerRpc() {
 
         @Override
         public void onDoubleClick(Integer itemIndex) {
@@ -43,7 +43,7 @@ public class CubaListSelect extends ListSelect {
     };
 
     public CubaListSelect() {
-        registerRpc(rpc);
+        registerRpc(listSelectServerRpc);
 
         setValidationVisible(false);
 

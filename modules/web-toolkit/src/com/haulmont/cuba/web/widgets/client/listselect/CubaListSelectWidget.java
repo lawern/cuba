@@ -16,6 +16,7 @@
 
 package com.haulmont.cuba.web.widgets.client.listselect;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.OptionElement;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.v7.client.ui.VListSelect;
@@ -24,14 +25,14 @@ import java.util.function.Consumer;
 
 public class CubaListSelectWidget extends VListSelect {
 
-    protected Consumer<Integer> listener;
+    protected Consumer<Integer> doubleClickListener;
 
     public CubaListSelectWidget() {
         getOptionsContainer().addDoubleClickHandler(event -> {
-            OptionElement element = (OptionElement) WidgetUtil.getElementUnderMouse(event.getNativeEvent());
+            Element element = WidgetUtil.getElementUnderMouse(event.getNativeEvent());
 
-            if (("OPTION").equals(element.getNodeName())) {
-                listener.accept(element.getIndex());
+            if (element instanceof OptionElement) {
+                doubleClickListener.accept(((OptionElement) element).getIndex());
             }
         });
     }
