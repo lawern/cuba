@@ -3,7 +3,7 @@
  * Use is subject to license terms, see http://www.cuba-platform.com/commercial-software-license for details.
  */
 
-package com.haulmont.cuba.gui.components.validators.constrainsts.tools;
+package com.haulmont.cuba.gui.components.validators.constrainsts.numbers;
 
 public class DoubleConstraint implements NumberConstraint {
 

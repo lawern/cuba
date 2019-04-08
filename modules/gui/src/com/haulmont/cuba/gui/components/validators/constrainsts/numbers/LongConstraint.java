@@ -3,31 +3,31 @@
  * Use is subject to license terms, see http://www.cuba-platform.com/commercial-software-license for details.
  */
 
-package com.haulmont.cuba.gui.components.validators.constrainsts.tools;
+package com.haulmont.cuba.gui.components.validators.constrainsts.numbers;
 
 import java.math.BigDecimal;
 
-public class BigDecimalConstraint implements NumberConstraint {
+public class LongConstraint implements NumberConstraint {
 
-    protected BigDecimal value;
+    protected Long value;
 
-    public BigDecimalConstraint(BigDecimal value) {
+    public LongConstraint(Long value) {
         this.value = value;
     }
 
     @Override
     public boolean isMax(long max) {
-        return compareValueWith(max) <= 0;
+        return value <= max;
     }
 
     @Override
     public boolean isMin(long min) {
-        return compareValueWith(min) >= 0;
+        return value >= min;
     }
 
     @Override
     public boolean isDigits(int integer, int fractional) {
-        BigDecimal bigDecimal = value.stripTrailingZeros();
+        BigDecimal bigDecimal = new BigDecimal(value).stripTrailingZeros();
 
         int integerLength = bigDecimal.precision() - bigDecimal.scale();
         int fractionLength = bigDecimal.scale() < 0 ? 0 : bigDecimal.scale();
@@ -38,38 +38,38 @@ public class BigDecimalConstraint implements NumberConstraint {
     @Override
     public boolean isDecimalMax(int max, boolean inclusive) {
         if (inclusive) {
-            return compareValueWith(max) <= 0;
+            return value <= max;
         } else {
-            return compareValueWith(max) < 0;
+            return value < max;
         }
     }
 
     @Override
     public boolean isDecimalMin(int min, boolean inclusive) {
-        return false;
+        if (inclusive) {
+            return value >= min;
+        } else {
+            return value > min;
+        }
     }
 
     @Override
     public boolean isNegativeOrZero() {
-        return value.signum() <= 0;
+        return value <= 0;
     }
 
     @Override
     public boolean isNegative() {
-        return value.signum() < 0;
+        return value < 0;
     }
 
     @Override
     public boolean isPositiveOrZero() {
-        return value.signum() >= 0;
+        return value >= 0;
     }
 
     @Override
     public boolean isPositive() {
-        return value.signum() > 0;
-    }
-
-    protected int compareValueWith(long val) {
-        return this.value.compareTo(BigDecimal.valueOf(val));
+        return value > 0;
     }
 }

@@ -6,7 +6,7 @@
 package com.haulmont.cuba.gui.components.validators.constrainsts;
 
 import com.haulmont.cuba.gui.components.ValidationException;
-import com.haulmont.cuba.gui.components.validators.constrainsts.tools.NumberConstraint;
+import com.haulmont.cuba.gui.components.validators.constrainsts.numbers.NumberConstraint;
 
 public class PositiveOrZeroValidator<T extends Number> extends AbstractValidator<T> {
 
@@ -30,7 +30,7 @@ public class PositiveOrZeroValidator<T extends Number> extends AbstractValidator
             throw new IllegalArgumentException("PositiveOrZeroValidator doesn't support following type: '" + value.getClass() + "'");
         }
 
-        if (!constraint.isNegativeOrZero()) {
+        if (!constraint.isPositiveOrZero()) {
             throw new ValidationException(String.format(getErrorMessage(), value));
         }
     }

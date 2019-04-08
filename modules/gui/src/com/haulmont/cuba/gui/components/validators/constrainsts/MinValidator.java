@@ -6,7 +6,7 @@
 package com.haulmont.cuba.gui.components.validators.constrainsts;
 
 import com.haulmont.cuba.gui.components.ValidationException;
-import com.haulmont.cuba.gui.components.validators.constrainsts.tools.NumberConstraint;
+import com.haulmont.cuba.gui.components.validators.constrainsts.numbers.NumberConstraint;
 
 public class MinValidator<T extends Number> extends AbstractValidator<T> {
 
@@ -39,7 +39,7 @@ public class MinValidator<T extends Number> extends AbstractValidator<T> {
             throw new IllegalArgumentException("MinValidator doesn't support following type: '" + value.getClass() + "'");
         }
 
-        if (!constraint.isMax(min)) {
+        if (!constraint.isMin(min)) {
             throw new ValidationException(String.format(getErrorMessage(), value, min));
         }
     }

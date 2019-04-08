@@ -18,7 +18,7 @@ package com.haulmont.cuba.gui.components.validators.constrainsts;
 
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Messages;
-import com.haulmont.cuba.gui.components.validators.constrainsts.tools.*;
+import com.haulmont.cuba.gui.components.validators.constrainsts.numbers.*;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
