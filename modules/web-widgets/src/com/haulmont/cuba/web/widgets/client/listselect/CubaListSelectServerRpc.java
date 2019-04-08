@@ -18,7 +18,15 @@ package com.haulmont.cuba.web.widgets.client.listselect;
 
 import com.vaadin.shared.communication.ServerRpc;
 
+/**
+ * RPC interface for calls from client to server.
+ */
 public interface CubaListSelectServerRpc extends ServerRpc {
-
+    /**
+     * Indicates to the server that the client has double-clicked
+     * the list item.
+     *
+     * @param itemIndex index of an item in the list
+     */
     void onDoubleClick(Integer itemIndex);
 }
