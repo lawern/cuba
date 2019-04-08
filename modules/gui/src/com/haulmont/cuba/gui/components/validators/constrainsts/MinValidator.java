@@ -21,8 +21,6 @@ public class MinValidator<T extends Number> extends AbstractValidator<T> {
     }
 
     public MinValidator<T> withMin(long min) {
-        checkPositiveValue(min, "Min value cannot be less then 0");
-
         this.min = min;
         return this;
     }

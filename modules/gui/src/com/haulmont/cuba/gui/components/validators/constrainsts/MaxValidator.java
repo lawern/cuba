@@ -21,8 +21,6 @@ public class MaxValidator<T extends Number> extends AbstractValidator<T> {
     }
 
     public MaxValidator<T> withMax(long max) {
-        checkPositiveValue(max, "Max value cannot be less then 0");
-
         this.max = max;
         return this;
     }

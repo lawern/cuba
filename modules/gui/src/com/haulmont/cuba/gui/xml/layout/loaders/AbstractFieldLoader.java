@@ -99,25 +99,17 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
     protected void loadConstraints(Field component, Element element) {
         Element constraints = element.element("constraints");
         if (constraints != null) {
-            Element notEmpty = constraints.element("notEmpty");
-            if (notEmpty != null) {
+            Element notEmptyElement = constraints.element("notEmpty");
+            if (notEmptyElement != null) {
                 NotEmptyValidator notEmptyValidator = new NotEmptyValidator();
-                String message = notEmpty.attributeValue("message");
-                if (message != null) {
-                    notEmptyValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(notEmptyValidator, notEmptyElement);
                 component.addValidator(notEmptyValidator);
             }
 
-            Element notBlank = constraints.element("notBlank");
-            if (notBlank != null) {
+            Element notBlankElement = constraints.element("notBlank");
+            if (notBlankElement != null) {
                 NotBlankValidator notBlankValidator = new NotBlankValidator<>();
-                String message = notBlank.attributeValue("message");
-                if (message != null) {
-                    notBlankValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(notBlankValidator, notBlankElement);
                 component.addValidator(notBlankValidator);
             }
 
@@ -125,12 +117,7 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
             if (regexpElement != null) {
                 String regexp = regexpElement.attributeValue("regexp");
                 RegexpValidator regexpValidator = new RegexpValidator<>(regexp);
-
-                String message = regexpElement.attributeValue("message");
-                if (message != null) {
-                    regexpValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(regexpValidator, regexpElement);
                 component.addValidator(regexpValidator);
             }
 
@@ -158,46 +145,84 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
                     sizeValidator.withMax(maxValue);
                 }
 
-                String message = sizeElement.attributeValue("message");
-                if (message != null) {
-                    sizeValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(sizeValidator, sizeElement);
                 component.addValidator(sizeValidator);
             }
 
             Element mustBeNullElement = constraints.element("mustBeNull");
             if (mustBeNullElement != null) {
                 NullValidator nullValidator = new NullValidator<>();
-                String message = mustBeNullElement.attributeValue("message");
-                if (message != null) {
-                    nullValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(nullValidator, mustBeNullElement);
                 component.addValidator(nullValidator);
             }
 
             Element mustBeNotNullElement = constraints.element("mustBeNotNull");
             if (mustBeNotNullElement != null) {
                 NotNullValidator notNullValidator = new NotNullValidator<>();
-                String message = mustBeNotNullElement.attributeValue("message");
-                if (message != null) {
-                    notNullValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(notNullValidator, mustBeNotNullElement);
                 component.addValidator(notNullValidator);
             }
 
             Element negativeOrZeroElement = constraints.element("negativeOrZero");
             if (negativeOrZeroElement != null) {
                 NegativeOrZeroValidator negativeOrZeroValidator = new NegativeOrZeroValidator<>();
-                String message = negativeOrZeroElement.attributeValue("message");
-                if (message != null) {
-                    negativeOrZeroValidator.setErrorMessage(loadResourceString(message));
-                }
-
+                loadValidatorMessage(negativeOrZeroValidator, negativeOrZeroElement);
                 component.addValidator(negativeOrZeroValidator);
             }
+
+            Element negativeElement = constraints.element("negative");
+            if (negativeElement != null) {
+                NegativeValidator negativeValidator = new NegativeValidator<>();
+                loadValidatorMessage(negativeValidator, negativeElement);
+                component.addValidator(negativeValidator);
+            }
+
+            Element positiveOrZeroElement = constraints.element("positiveOrZero");
+            if (positiveOrZeroElement != null) {
+                PositiveOrZeroValidator positiveOrZeroValidator = new PositiveOrZeroValidator<>();
+                loadValidatorMessage(positiveOrZeroValidator, positiveOrZeroElement);
+                component.addValidator(positiveOrZeroValidator);
+            }
+
+            Element positiveElement = constraints.element("positive");
+            if (positiveElement != null) {
+                PositiveValidator positiveValidator = new PositiveValidator<>();
+                loadValidatorMessage(positiveValidator, positiveElement);
+                component.addValidator(positiveValidator);
+            }
+
+            Element maxElement = constraints.element("max");
+            if (maxElement != null) {
+                MaxValidator maxValidator = new MaxValidator<>();
+                loadValidatorMessage(maxValidator, maxElement);
+
+                String max = maxElement.attributeValue("value");
+                if (max != null) {
+                    int maxValue = Integer.parseInt(max);
+                    maxValidator.withMax(maxValue);
+                }
+                component.addValidator(maxValidator);
+            }
+
+            Element minElement = constraints.element("min");
+            if (minElement != null) {
+                MinValidator minValidator = new MinValidator<>();
+                loadValidatorMessage(minValidator, minElement);
+
+                String min = minElement.attributeValue("value");
+                if (min != null) {
+                    int minValue = Integer.parseInt(min);
+                    minValidator.withMin(minValue);
+                }
+                component.addValidator(minValidator);
+            }
+        }
+    }
+
+    protected void loadValidatorMessage(AbstractValidator validator, Element element) {
+        String message = element.attributeValue("message");
+        if (message != null) {
+            validator.setErrorMessage(loadResourceString(message));
         }
     }
 
