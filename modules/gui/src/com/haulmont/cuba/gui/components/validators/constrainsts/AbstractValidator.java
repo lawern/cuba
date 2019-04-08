@@ -22,6 +22,7 @@ import com.haulmont.cuba.gui.components.validators.constrainsts.numbers.*;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.function.Consumer;
 
 public abstract class AbstractValidator<T> implements Consumer<T> {
@@ -42,7 +43,7 @@ public abstract class AbstractValidator<T> implements Consumer<T> {
     protected NumberConstraint getNumberConstraint(Number value) {
         Class clazz = value.getClass();
         if (clazz.equals(Integer.class)) {
-            return new IntegerConstraint(value.intValue());
+            return new BigIntegerConstraint(BigInteger.valueOf(value.longValue()));
         } else if (clazz.equals(Long.class) && value.longValue() <= 0) {
             return new LongConstraint(value.longValue());
         } else if (clazz.equals(BigDecimal.class)) {

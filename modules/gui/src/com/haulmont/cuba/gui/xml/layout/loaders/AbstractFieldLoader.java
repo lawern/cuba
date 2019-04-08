@@ -216,6 +216,56 @@ public abstract class AbstractFieldLoader<T extends Field> extends AbstractDatas
                 }
                 component.addValidator(minValidator);
             }
+
+            Element decimalMinElement = constraints.element("decimalMin");
+            if (decimalMinElement != null) {
+                DecimalMinValidator decimalMinValidator = new DecimalMinValidator<>();
+                loadValidatorMessage(decimalMinValidator, decimalMinElement);
+
+                String decimalMin = decimalMinElement.attributeValue("value");
+                if (StringUtils.isNotBlank(decimalMin)) {
+                    decimalMinValidator.withMin(decimalMin);
+                }
+
+                String inclusive = decimalMinElement.attributeValue("inclusive");
+                if (StringUtils.isNotBlank(inclusive)) {
+                    decimalMinValidator.withInclusive(Boolean.parseBoolean(inclusive));
+                }
+                component.addValidator(decimalMinValidator);
+            }
+
+            Element decimalMaxElement = constraints.element("decimalMax");
+            if (decimalMaxElement != null) {
+                DecimalMaxValidator decimalMaxValidator = new DecimalMaxValidator<>();
+                loadValidatorMessage(decimalMaxValidator, decimalMaxElement);
+
+                String decimalMax = decimalMaxElement.attributeValue("value");
+                if (StringUtils.isNotBlank(decimalMax)) {
+                    decimalMaxValidator.withMax(decimalMax);
+                }
+
+                String inclusive = decimalMaxElement.attributeValue("inclusive");
+                if (StringUtils.isNotBlank(inclusive)) {
+                    decimalMaxValidator.withInclusive(Boolean.parseBoolean(inclusive));
+                }
+                component.addValidator(decimalMaxValidator);
+            }
+
+            Element digitsElement = constraints.element("digits");
+            if (digitsElement != null) {
+                DigitsValidator digitsValidator;
+
+                String integer = digitsElement.attributeValue("integer");
+                String fraction = digitsElement.attributeValue("fraction");
+                if (StringUtils.isNotBlank(integer) || StringUtils.isNotBlank(fraction)) {
+                    digitsValidator = new DigitsValidator<>(Integer.parseInt(integer), Integer.parseInt(fraction));
+                } else {
+                    throw new GuiDevelopmentException("'integer' and 'fraction' properties are required", context.getFullFrameId());
+                }
+
+                loadValidatorMessage(digitsValidator, digitsElement);
+                component.addValidator(digitsValidator);
+            }
         }
     }
 

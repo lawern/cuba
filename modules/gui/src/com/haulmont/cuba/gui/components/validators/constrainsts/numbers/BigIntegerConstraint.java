@@ -6,25 +6,26 @@
 package com.haulmont.cuba.gui.components.validators.constrainsts.numbers;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
-public class LongConstraint implements NumberConstraint {
+public class BigIntegerConstraint implements NumberConstraint {
 
-    protected Long value;
+    protected BigInteger value;
     protected BigDecimal bigDecimalValue;
 
-    public LongConstraint(Long value) {
+    public BigIntegerConstraint(BigInteger value) {
         this.value = value;
         this.bigDecimalValue = new BigDecimal(value);
     }
 
     @Override
     public boolean isMax(long max) {
-        return value <= max;
+        return compareValueWith(max) <= 1;
     }
 
     @Override
     public boolean isMin(long min) {
-        return value >= min;
+        return compareValueWith(min) >= 0;
     }
 
     @Override
@@ -57,22 +58,26 @@ public class LongConstraint implements NumberConstraint {
 
     @Override
     public boolean isNegativeOrZero() {
-        return value <= 0;
+        return value.signum() <= 0;
     }
 
     @Override
     public boolean isNegative() {
-        return value < 0;
+        return value.signum() < 0;
     }
 
     @Override
     public boolean isPositiveOrZero() {
-        return value >= 0;
+        return value.signum() >= 0;
     }
 
     @Override
     public boolean isPositive() {
-        return value > 0;
+        return value.signum() > 0;
+    }
+
+    protected int compareValueWith(long val) {
+        return value.compareTo(BigInteger.valueOf(val));
     }
 
     protected int compareValueWith(BigDecimal val) {

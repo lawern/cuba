@@ -5,16 +5,18 @@
 
 package com.haulmont.cuba.gui.components.validators.constrainsts.numbers;
 
+import java.math.BigDecimal;
+
 public interface NumberConstraint {
     boolean isMax(long max);
 
     boolean isMin(long min);
 
-    boolean isDigits(int integer, int fractional);
+    boolean isDigits(int integer, int fraction);
 
-    boolean isDecimalMax(int max, boolean inclusive);
+    boolean isDecimalMax(BigDecimal max, boolean inclusive);
 
-    boolean isDecimalMin(int min, boolean inclusive);
+    boolean isDecimalMin(BigDecimal min, boolean inclusive);
 
     boolean isNegativeOrZero();
 

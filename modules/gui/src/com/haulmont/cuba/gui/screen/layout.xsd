@@ -1158,6 +1158,9 @@
             <xs:element name="positive" minOccurs="0" maxOccurs="1" type="constraintType"/>
             <xs:element name="max" minOccurs="0" maxOccurs="1" type="maxMinConstraintType"/>
             <xs:element name="min" minOccurs="0" maxOccurs="1" type="maxMinConstraintType"/>
+            <xs:element name="decimalMin" minOccurs="0" maxOccurs="1" type="decimalMaxMinConstraintType"/>
+            <xs:element name="decimalMax" minOccurs="0" maxOccurs="1" type="decimalMaxMinConstraintType"/>
+            <xs:element name="digits" minOccurs="0" maxOccurs="1" type="digitsConstraintType"/>
         </xs:all>
     </xs:complexType>
 
@@ -1169,6 +1172,23 @@
         <xs:complexContent>
             <xs:extension base="constraintType">
                 <xs:attribute name="regexp" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="digitsConstraintType">
+        <xs:complexContent>
+            <xs:extension base="constraintType">
+                <xs:attribute name="integer" type="xs:int" use="required"/>
+                <xs:attribute name="fraction" type="xs:int" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+
+    </xs:complexType><xs:complexType name="decimalMaxMinConstraintType">
+        <xs:complexContent>
+            <xs:extension base="constraintType">
+                <xs:attribute name="value" type="xs:string" use="required"/>
+                <xs:attribute name="inclusive" type="xs:boolean"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

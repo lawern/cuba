@@ -5,6 +5,8 @@
 
 package com.haulmont.cuba.gui.components.validators.constrainsts.numbers;
 
+import java.math.BigDecimal;
+
 public class DoubleConstraint implements NumberConstraint {
 
     protected Double value;
@@ -24,17 +26,17 @@ public class DoubleConstraint implements NumberConstraint {
     }
 
     @Override
-    public boolean isDigits(int integer, int fractional) {
+    public boolean isDigits(int integer, int fraction) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isDecimalMax(int max, boolean inclusive) {
+    public boolean isDecimalMax(BigDecimal max, boolean inclusive) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isDecimalMin(int min, boolean inclusive) {
+    public boolean isDecimalMin(BigDecimal min, boolean inclusive) {
         throw new UnsupportedOperationException();
     }
 

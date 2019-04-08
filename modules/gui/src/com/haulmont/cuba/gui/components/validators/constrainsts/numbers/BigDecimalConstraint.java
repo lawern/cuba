@@ -26,17 +26,17 @@ public class BigDecimalConstraint implements NumberConstraint {
     }
 
     @Override
-    public boolean isDigits(int integer, int fractional) {
+    public boolean isDigits(int integer, int fraction) {
         BigDecimal bigDecimal = value.stripTrailingZeros();
 
         int integerLength = bigDecimal.precision() - bigDecimal.scale();
         int fractionLength = bigDecimal.scale() < 0 ? 0 : bigDecimal.scale();
 
-        return integer >= integerLength && fractional >= fractionLength;
+        return integer >= integerLength && fraction >= fractionLength;
     }
 
     @Override
-    public boolean isDecimalMax(int max, boolean inclusive) {
+    public boolean isDecimalMax(BigDecimal max, boolean inclusive) {
         if (inclusive) {
             return compareValueWith(max) <= 0;
         } else {
@@ -45,8 +45,12 @@ public class BigDecimalConstraint implements NumberConstraint {
     }
 
     @Override
-    public boolean isDecimalMin(int min, boolean inclusive) {
-        return false;
+    public boolean isDecimalMin(BigDecimal min, boolean inclusive) {
+        if (inclusive) {
+            return compareValueWith(min) >= 0;
+        } else {
+            return compareValueWith(min) > 0;
+        }
     }
 
     @Override
@@ -71,5 +75,9 @@ public class BigDecimalConstraint implements NumberConstraint {
 
     protected int compareValueWith(long val) {
         return this.value.compareTo(BigDecimal.valueOf(val));
+    }
+
+    private int compareValueWith(BigDecimal val) {
+        return this.value.compareTo(val);
     }
 }
