@@ -53,13 +53,6 @@ public interface OptionsList<V, I> extends OptionsField<V, I>, Component.Focusab
     Subscription addDoubleClickListener(Consumer<DoubleClickEvent<I>> listener);
 
     /**
-     * Removes a listener that is fired when user double-clicks on a list item.
-     *
-     * @param listener a listener to remove
-     */
-    void removeClickListener(Consumer<DoubleClickEvent<I>> listener);
-
-    /**
      * The event sent when the user double-clicks mouse on a list item.
      *
      * @param <I> item type

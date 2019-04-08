@@ -300,10 +300,4 @@ public class WebOptionsList<V, I> extends WebAbstractField<CubaListSelect, V>
     public Subscription addDoubleClickListener(Consumer<DoubleClickEvent<I>> listener) {
         return getEventHub().subscribe(DoubleClickEvent.class, (Consumer) listener);
     }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void removeClickListener(Consumer<DoubleClickEvent<I>> listener) {
-        unsubscribe(DoubleClickEvent.class, (Consumer) listener);
-    }
 }
