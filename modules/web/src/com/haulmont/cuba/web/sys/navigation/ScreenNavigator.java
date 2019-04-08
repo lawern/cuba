@@ -27,6 +27,9 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.List;
 
+/**
+ * A facade bean that is intended for screen navigation using all available {@link NavigationHandler} beans.
+ */
 @Component(ScreenNavigator.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class ScreenNavigator {
@@ -43,12 +46,6 @@ public class ScreenNavigator {
     public ScreenNavigator(UrlChangeHandler urlChangeHandler, AppUI ui) {
         this.urlChangeHandler = urlChangeHandler;
         this.ui = ui;
-    }
-
-    /**
-     * INTERNAL
-     */
-    protected ScreenNavigator() {
     }
 
     public void handleScreenNavigation(NavigationState requestedState) {

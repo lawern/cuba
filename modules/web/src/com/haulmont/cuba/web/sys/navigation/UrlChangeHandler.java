@@ -144,6 +144,10 @@ public class UrlChangeHandler implements InitializingBean {
     }
 
     public boolean isRootState(NavigationState requestedState) {
+        if (requestedState == null) {
+            return false;
+        }
+
         return StringUtils.isEmpty(requestedState.getStateMark())
                 && StringUtils.isEmpty(requestedState.getNestedRoute());
     }

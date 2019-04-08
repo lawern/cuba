@@ -42,7 +42,7 @@ public interface NavigationHandler {
     int LOWEST_PLATFORM_PRECEDENCE = 1000;
 
     /**
-     * Handles requested state.
+     * Performs navigation corresponding the given {@code requestedState}.
      *
      * @param requestedState requested state represented by {@link NavigationState} instance
      * @param ui             current UI

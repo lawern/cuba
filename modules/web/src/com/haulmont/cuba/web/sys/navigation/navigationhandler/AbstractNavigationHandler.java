@@ -20,10 +20,7 @@ import com.haulmont.cuba.core.global.AccessDeniedException;
 import com.haulmont.cuba.core.global.Security;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.navigation.NavigationState;
-import com.haulmont.cuba.gui.screen.EditorScreen;
-import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.Screen;
-import com.haulmont.cuba.gui.screen.compatibility.LegacyFrame;
 import com.haulmont.cuba.security.entity.PermissionType;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.sys.navigation.UrlChangeHandler;
@@ -60,25 +57,18 @@ public abstract class AbstractNavigationHandler implements NavigationHandler {
             throw new AccessDeniedException(PermissionType.SCREEN, windowInfo.getId());
         }
 
-        UrlChangeHandler owner = ui.getUrlChangeHandler();
+        UrlChangeHandler urlChangeHandler = ui.getUrlChangeHandler();
 
-        NavigationFilter.AccessCheckResult result = owner.navigationAllowed(requestedState);
+        NavigationFilter.AccessCheckResult result = urlChangeHandler.navigationAllowed(requestedState);
         if (result.isRejected()) {
             if (StringUtils.isNotEmpty(result.getMessage())) {
-                owner.showNotification(result.getMessage());
+                urlChangeHandler.showNotification(result.getMessage());
             }
             revertNavigationState(ui);
 
             return true;
         }
+
         return false;
-    }
-
-    protected boolean isEditor(WindowInfo windowInfo) {
-        return EditorScreen.class.isAssignableFrom(windowInfo.getControllerClass());
-    }
-
-    protected boolean isLegacyScreen(Class<? extends FrameOwner> controllerClass) {
-        return LegacyFrame.class.isAssignableFrom(controllerClass);
     }
 }

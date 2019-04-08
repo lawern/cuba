@@ -26,9 +26,11 @@ import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.navigation.NavigationState;
 import com.haulmont.cuba.gui.screen.EditorScreen;
+import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.MapScreenOptions;
 import com.haulmont.cuba.gui.screen.OpenMode;
 import com.haulmont.cuba.gui.screen.Screen;
+import com.haulmont.cuba.gui.screen.compatibility.LegacyFrame;
 import com.haulmont.cuba.security.entity.EntityOp;
 import com.haulmont.cuba.security.entity.PermissionType;
 import com.haulmont.cuba.web.AppUI;
@@ -309,5 +311,13 @@ public class ScreenNavigationHandler extends AbstractNavigationHandler implement
         }
 
         return ParamsMap.of(WindowParams.ITEM.name(), entity);
+    }
+
+    protected boolean isEditor(WindowInfo windowInfo) {
+        return EditorScreen.class.isAssignableFrom(windowInfo.getControllerClass());
+    }
+
+    protected boolean isLegacyScreen(Class<? extends FrameOwner> controllerClass) {
+        return LegacyFrame.class.isAssignableFrom(controllerClass);
     }
 }

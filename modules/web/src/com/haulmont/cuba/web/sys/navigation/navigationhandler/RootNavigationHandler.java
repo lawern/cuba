@@ -16,12 +16,14 @@
 
 package com.haulmont.cuba.web.sys.navigation.navigationhandler;
 
+import com.haulmont.cuba.core.global.Security;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.navigation.NavigationState;
 import com.haulmont.cuba.gui.screen.OpenMode;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.WebWindow;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +45,10 @@ public class RootNavigationHandler extends AbstractNavigationHandler implements 
 
     @Inject
     protected WindowConfig windowConfig;
+    @Inject
+    protected WebConfig webConfig;
+    @Inject
+    protected Security security;
 
     @Override
     public boolean doHandle(NavigationState requestedState, AppUI ui) {
@@ -54,6 +60,11 @@ public class RootNavigationHandler extends AbstractNavigationHandler implements 
         WindowInfo windowInfo = windowConfig.findWindowInfoByRoute(requestedState.getRoot());
         if (windowInfo == null) {
             log.info("Unable to perform navigation to requested state '{}'", requestedState);
+            revertNavigationState(ui);
+            return true;
+        }
+
+        if (isNotPermittedToNavigate(requestedState, windowInfo, security, ui)) {
             revertNavigationState(ui);
             return true;
         }
