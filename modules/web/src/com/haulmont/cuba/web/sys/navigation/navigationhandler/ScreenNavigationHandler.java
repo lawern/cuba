@@ -147,7 +147,7 @@ public class ScreenNavigationHandler extends AbstractNavigationHandler implement
     }
 
     protected boolean fullyHandled(NavigationState requestedState) {
-        return MapUtils.isNotEmpty(requestedState.getParams());
+        return MapUtils.isEmpty(requestedState.getParams());
     }
 
     protected void handle404(String route, AppUI ui) {

@@ -54,7 +54,7 @@ public class RootNavigationHandler extends AbstractNavigationHandler implements 
     public boolean doHandle(NavigationState requestedState, AppUI ui) {
         if (isEmptyState(requestedState)
                 || !isRootChanged(requestedState, ui)) {
-            return false;
+            return true;
         }
 
         WindowInfo windowInfo = windowConfig.findWindowInfoByRoute(requestedState.getRoot());
@@ -77,8 +77,8 @@ public class RootNavigationHandler extends AbstractNavigationHandler implements 
     }
 
     protected boolean fullyHandled(NavigationState requestedState) {
-        return StringUtils.isNotEmpty(requestedState.getNestedRoute())
-                || MapUtils.isNotEmpty(requestedState.getParams());
+        return StringUtils.isEmpty(requestedState.getNestedRoute())
+                && MapUtils.isEmpty(requestedState.getParams());
     }
 
     protected boolean isRootChanged(NavigationState requestedState, AppUI ui) {

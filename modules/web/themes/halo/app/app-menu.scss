@@ -292,6 +292,7 @@ $cuba-menubar-submenu-item-font-weight: $v-font-weight !default;
       .c-user-timezone-label,
       .c-ftsfield-button,
       .c-logout-button,
+      .c-login-button,
       .c-newwindow-button {
         color: $cuba-menubar-text-color;
       }
@@ -299,8 +300,10 @@ $cuba-menubar-submenu-item-font-weight: $v-font-weight !default;
       .c-ftsfield-button:hover,
       .c-ftsfield-button:focus,
       .c-logout-button:hover,
+      .c-login-button:hover,
       .c-newwindow-button:hover,
       .c-logout-button:focus,
+      .c-login-button:focus,
       .c-newwindow-button:focus {
         color: $cuba-menubar-menuitem-text-selected-color;
       }

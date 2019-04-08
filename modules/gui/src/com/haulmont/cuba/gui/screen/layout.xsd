@@ -3093,6 +3093,12 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="loginButtomComponent">
+        <xs:complexContent>
+            <xs:extension base="baseMainElement"/>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:group name="standardComponent">
         <xs:sequence>
             <xs:choice maxOccurs="unbounded">
@@ -3187,6 +3193,7 @@
                 <!-- Main window -->
 
                 <xs:element name="logoutButton" type="logoutButtonComponent"/>
+                <xs:element name="loginButton" type="loginButtomComponent"/>
                 <xs:element name="newWindowButton" type="newWindowButtonComponent"/>
                 <xs:element name="ftsField" type="ftsFieldComponent"/>
                 <xs:element name="userIndicator" type="userIndicatorComponent"/>

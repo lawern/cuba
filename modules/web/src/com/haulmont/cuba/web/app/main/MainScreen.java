@@ -16,10 +16,7 @@
 
 package com.haulmont.cuba.web.app.main;
 
-import com.haulmont.cuba.core.global.Configuration;
-import com.haulmont.cuba.core.global.Events;
-import com.haulmont.cuba.core.global.FtsConfigHelper;
-import com.haulmont.cuba.core.global.Messages;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.Route;
 import com.haulmont.cuba.gui.ScreenTools;
 import com.haulmont.cuba.gui.Screens;
@@ -28,9 +25,7 @@ import com.haulmont.cuba.gui.components.Image;
 import com.haulmont.cuba.gui.components.ThemeResource;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.dev.LayoutAnalyzerContextMenuProvider;
-import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
-import com.haulmont.cuba.gui.components.mainwindow.FtsField;
-import com.haulmont.cuba.gui.components.mainwindow.UserIndicator;
+import com.haulmont.cuba.gui.components.mainwindow.*;
 import com.haulmont.cuba.gui.events.UserRemovedEvent;
 import com.haulmont.cuba.gui.events.UserSubstitutionsChangedEvent;
 import com.haulmont.cuba.gui.screen.Screen;
@@ -38,6 +33,7 @@ import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.screen.UiControllerUtils;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
+import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
@@ -62,9 +58,36 @@ public class MainScreen extends Screen implements Window.HasWorkArea, Window.Has
     protected void initComponents(@SuppressWarnings("unused") InitEvent e) {
         initLogoImage();
         initFtsField();
-        initLayoutAnalyzerContextMenu();
+        initUserIndicator();
+        initLogoutButton();
+        initLoginButton();
         initTitleBar();
         initMenu();
+        initLayoutAnalyzerContextMenu();
+    }
+
+    protected void initUserIndicator() {
+        UserIndicator userIndicator = getUserIndicator();
+        if (userIndicator != null) {
+            boolean authenticated = App.getInstance().getConnection().isAuthenticated();
+            userIndicator.setVisible(authenticated);
+        }
+    }
+
+    protected void initLogoutButton() {
+        LogoutButton logoutButton = getLogoutButton();
+        if (logoutButton != null) {
+            boolean authenticated = App.getInstance().getConnection().isAuthenticated();
+            logoutButton.setVisible(authenticated);
+        }
+    }
+
+    protected void initLoginButton() {
+        LoginButton loginButton = getLoginButton();
+        if (loginButton != null) {
+            boolean authenticated = App.getInstance().getConnection().isAuthenticated();
+            loginButton.setVisible(!authenticated);
+        }
     }
 
     protected void initLogoImage() {
@@ -165,17 +188,27 @@ public class MainScreen extends Screen implements Window.HasWorkArea, Window.Has
     }
 
     @Nullable
-    protected Component getAppMenu() {
-        return getWindow().getComponent("appMenu");
+    protected AppMenu getAppMenu() {
+        return (AppMenu) getWindow().getComponent("appMenu");
     }
 
     @Nullable
-    protected Component getSideMenu() {
-        return getWindow().getComponent("sideMenu");
+    protected SideMenu getSideMenu() {
+        return (SideMenu) getWindow().getComponent("sideMenu");
     }
 
     @Nullable
     protected Component getTitleBar() {
         return getWindow().getComponent("titleBar");
+    }
+
+    @Nullable
+    protected LogoutButton getLogoutButton() {
+        return (LogoutButton) getWindow().getComponent("logoutButton");
+    }
+
+    @Nullable
+    protected LoginButton getLoginButton() {
+        return (LoginButton) getWindow().getComponent("loginButton");
     }
 }

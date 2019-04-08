@@ -46,7 +46,6 @@
                       align="MIDDLE_CENTER"
                       spacing="true"
                       margin="true"
-                      width="100%"
                       expand="userIndicator">
                     <userIndicator id="userIndicator"
                                    align="MIDDLE_CENTER"/>
@@ -56,6 +55,9 @@
                     <logoutButton id="logoutButton"
                                   description="mainMsg://logoutBtnDescription"
                                   icon="app/images/exit.png"/>
+                    <loginButton id="loginButton"
+                                 description="mainMsg://loginBtnDescription"
+                                 icon="SIGN_IN"/>
                 </hbox>
                 <timeZoneIndicator id="timeZoneIndicator"
                                    align="MIDDLE_CENTER"/>

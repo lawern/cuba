@@ -490,11 +490,7 @@ public abstract class App {
     public void removeAllWindows() {
         log.debug("Closing all windows in all UIs");
         try {
-            List<AppUI> currentSessionUIs = getAppUIs()
-                    .stream()
-                    .filter(ui -> userSessionSource.checkCurrentUserSession()
-                            && Objects.equals(userSessionSource.getUserSession(), ui.getCurrentSession()))
-                    .collect(Collectors.toList());
+            List<AppUI> currentSessionUIs = Collections.singletonList(AppUI.getCurrent());
 
             for (AppUI ui : currentSessionUIs) {
                 Screens screens = ui.getScreens();
