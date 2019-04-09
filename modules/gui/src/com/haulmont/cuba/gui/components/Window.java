@@ -360,7 +360,7 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
         AUTO,
 
         /**
-         * Window won't focus specified component.
+         * Window won't focus components.
          */
         NO_FOCUS
     }
